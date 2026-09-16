@@ -6,11 +6,11 @@ class Users(Base):
     __tablename__ = "Users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    username: Mapped[str] = mapped_column(String(25))
+    username: Mapped[str] = mapped_column(String(50), unique=True)
     password: Mapped[str] = mapped_column(String(255))
-    first_name: Mapped[str] = mapped_column(String(25))
-    last_name: Mapped[str] = mapped_column(String(25))
-    middle_name: Mapped[str] = mapped_column(String(25))
+    first_name: Mapped[str] = mapped_column(String(50))
+    last_name: Mapped[str] = mapped_column(String(50))
+    middle_name: Mapped[str] = mapped_column(String(50))
     role_id: Mapped[int] = mapped_column(ForeignKey("UserRole.id"))
     class_id : Mapped[int | None] = mapped_column(ForeignKey("SchoolClasses.id"))
 
