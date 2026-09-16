@@ -1,6 +1,6 @@
+from Dal.database import engine
+from Dal.DTOs.Base import Base
 from sqlalchemy import text
-from src.StudentsTrackingSystem.Dal import engine
-from src.StudentsTrackingSystem.Dal.DTOs import Base
 
 with engine.connect() as conn:
     row = conn.execute(

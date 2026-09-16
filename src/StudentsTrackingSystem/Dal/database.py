@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from typing import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from src.StudentsTrackingSystem.Core.config import DATABASE_URL
+from Core.config import DATABASE_URL
 
 engine = create_engine(
     DATABASE_URL,

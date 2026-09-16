@@ -13,8 +13,8 @@ class Schedule(Base):
     day_of_week: Mapped[int] = mapped_column(SmallInteger)
     room: Mapped[str] = mapped_column(String(10))
 
-    school_class: Mapped["SchoolClasses"] = relationship(back_populates="schedule")
+    school_class: Mapped["SchoolClasses"] = relationship(back_populates="schedules")
     subject: Mapped["Subjects"] = relationship(back_populates="schedule")
-    teacher: Mapped["Users"] = relationship(back_populates="schedule")
+    teacher: Mapped["Users"] = relationship(back_populates="schedules")
     period: Mapped["LessonsPeriods"] = relationship(back_populates="schedule")
-    lesson: Mapped["Lesson"] = relationship(back_populates="schedule")
+    lessons: Mapped[list["Lessons"]] = relationship(back_populates="schedule")

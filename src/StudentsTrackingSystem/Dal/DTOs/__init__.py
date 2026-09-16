@@ -1,14 +1,14 @@
-from src.StudentsTrackingSystem.Dal.DTOs.Attendance import Attendance
-from src.StudentsTrackingSystem.Dal.DTOs.Lessons import Lessons
-from src.StudentsTrackingSystem.Dal.DTOs.LessonsPeriods import LessonsPeriods
-from src.StudentsTrackingSystem.Dal.DTOs.LessonsResults import LessonsResults
-from src.StudentsTrackingSystem.Dal.DTOs.Schedule import Schedule
-from src.StudentsTrackingSystem.Dal.DTOs.SchoolCalendar import SchoolCalendar
-from src.StudentsTrackingSystem.Dal.DTOs.SchoolClasses import SchoolClasses
-from src.StudentsTrackingSystem.Dal.DTOs.SchoolYear import SchoolYear
-from src.StudentsTrackingSystem.Dal.DTOs.Subjects import Subjects
-from src.StudentsTrackingSystem.Dal.DTOs.User import Users
-from src.StudentsTrackingSystem.Dal.DTOs.UserRole import UserRole
-from src.StudentsTrackingSystem.Dal.DTOs.Base import Base
+from .Attendance import Attendance
+from .Lessons import Lessons
+from .LessonsPeriods import LessonsPeriods
+from .LessonsResults import LessonsResults
+from .Schedule import Schedule
+from .SchoolCalendar import SchoolCalendar
+from .SchoolClasses import SchoolClasses
+from .SchoolYear import SchoolYear
+from .Subjects import Subjects
+from .User import Users
+from .UserRole import UserRole
+from .Base import Base
 
 __all__ = ["Attendance", "Lessons", "LessonsPeriods","LessonsResults","Schedule","SchoolCalendar","SchoolClasses","SchoolYear","Subjects","Users","UserRole","Base"]

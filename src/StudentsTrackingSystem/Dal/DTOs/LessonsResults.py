@@ -2,7 +2,7 @@ from .Base import Base
 from sqlalchemy import Integer, String, ForeignKey, SmallInteger, Enum, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
-from src.StudentsTrackingSystem.Core.Enums import GradeType
+from Core.Enums import GradeType
 
 class LessonsResults(Base):
     __tablename__ = "LessonsResults"

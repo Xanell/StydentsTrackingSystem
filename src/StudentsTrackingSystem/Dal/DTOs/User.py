@@ -16,6 +16,6 @@ class Users(Base):
 
     role: Mapped["UserRole"] = relationship(back_populates="users")
     school_class: Mapped["SchoolClasses | None"] = relationship(back_populates="students")
-    schedule: Mapped[list["Schedule"]] = relationship(back_populates="teacher")
+    schedules: Mapped[list["Schedule"]] = relationship(back_populates="teacher")
     lesson_results: Mapped[list["LessonsResults"]] = relationship(back_populates="student")
     attendances: Mapped[list["Attendance"]] = relationship(back_populates="student")

@@ -1,13 +1,13 @@
 from enum import Enum
 
-class DayType(Enum):
+class DayType(str, Enum):
     SCHOOL_DAY = "school_day"
     WEEKEND = "weekend"
     HOLIDAY = "holiday" # гос праздники
     VACATION = "vacation" # каникулы
     OTHER = "other"
 
-class GradeType(Enum):
+class GradeType(str, Enum):
     CLASSWORK = "class_work"
     HOMEWORK = "home_work"
     TEST = "test"

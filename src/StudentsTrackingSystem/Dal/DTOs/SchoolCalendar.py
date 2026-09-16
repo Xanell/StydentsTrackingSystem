@@ -2,7 +2,7 @@ from .Base import Base
 from sqlalchemy import Integer, ForeignKey, SmallInteger, Date, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
-from src.StudentsTrackingSystem.Core.Enums import DayType
+from Core.Enums import DayType
 
 class SchoolCalendar(Base):
     __tablename__ = "SchoolCalendar"

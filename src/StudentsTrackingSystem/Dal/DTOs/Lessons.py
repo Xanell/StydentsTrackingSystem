@@ -14,6 +14,6 @@ class Lessons(Base):
     files: Mapped[str] = mapped_column(String)
     schedule_id: Mapped[int] = mapped_column(ForeignKey("Schedule.id"))
 
-    schedule: Mapped[list["Schedule"]] = relationship(back_populates="lesson")
+    schedule: Mapped["Schedule"] = relationship(back_populates="lessons")
     results: Mapped[list["LessonsResults"]] = relationship(back_populates="lesson")
     attendances: Mapped[list["Attendance"]] = relationship(back_populates="lesson")
