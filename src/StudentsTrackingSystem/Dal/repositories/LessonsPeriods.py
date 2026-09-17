@@ -1,28 +1,41 @@
 from datetime import time
 from sqlalchemy.orm import Session
-from sqlalchemy import 
+from sqlalchemy import select
 
 from ..DTOs.LessonsPeriods import LessonsPeriods
 
 
-class LessonsPeriodsRepository:     # Репозиторий для работы с разбивкой времени уроков"""
+class LessonsPeriodsRepository:     # Репозиторий для работы с разбивкой времени уроков
 
     def __init__(self, db: Session):
         self.db = db
 
 
-    def create_periods(self) -> list[LessonsPeriods]:
+    def add_period(self, start_time: time, end_time: time) -> LessonsPeriods:
 
-        """Периоды на 7 уроков"""
+        new_period = LessonsPeriods(
+            start_time = start_time,
+            end_time = end_time
+            )
+        
+        self.db.add(new_period)
+        self.db.commit()
+        self.db.refresh(new_period)
+        return new_period
 
-        periods = [
-            {"start_time": time(8, 30), "end_time": time(9, 15)},
-            {"start_time": time(9, 25), "end_time": time(10, 10)},
-            {"start_time": time(10, 25), "end_time": time(11, 10)},
-            {"start_time": time(11, 25), "end_time": time(12, 10)},
-            {"start_time": time(12, 25), "end_time": time(13, 10)},
-            {"start_time": time(13, 20), "end_time": time(14, 5)},
-            {"start_time": time(14, 15), "end_time": time(15, 0)},
-        ]
+    def get_by_id(self, period_id: int) -> LessonsPeriods | None:
+        return self.db.get(LessonsPeriods, period_id)
 
-        return periods
+    def get_all(self) ->  list[LessonsPeriods]:
+        return self.db.scalars(select(LessonsPeriods)).all()
+
+    def update_period(self, period: LessonsPeriods, **kwargs) -> LessonsPeriods:
+        for key, value in kwargs.items():
+            setattr(period, key, value)
+        self.db.commit()
+        self.db.refresh(period)
+        return period
+    
+    def delete_period(self, period: LessonsPeriods) -> None:
+        self.db.delete(period)
+        self.db.commit()

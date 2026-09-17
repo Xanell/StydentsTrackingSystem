@@ -9,7 +9,7 @@ class Attendance(Base):
     lesson_id: Mapped[int] = mapped_column(ForeignKey("Lessons.id"))
     student_id: Mapped[int] = mapped_column(ForeignKey("Users.id"))
     is_present: Mapped[bool] = mapped_column(Boolean)
-    reason: Mapped[str] = mapped_column(String(255))
+    reason: Mapped[str | None] = mapped_column(String(255))
 
     lesson: Mapped["Lessons"] = relationship(back_populates="attendances")
     student: Mapped["Users"] = relationship(back_populates="attendances")

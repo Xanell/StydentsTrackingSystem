@@ -10,7 +10,7 @@ class LessonsResults(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     lesson_id: Mapped[int] = mapped_column(ForeignKey("Lessons.id"))
     student_id: Mapped[int] = mapped_column(ForeignKey("Users.id"))
-    file: Mapped[str] = mapped_column(String, nullable=True)
+    file: Mapped[str | None] = mapped_column(String)
     grade: Mapped[int] = mapped_column(SmallInteger)
     grade_type: Mapped[GradeType] = mapped_column(Enum(
         GradeType,
