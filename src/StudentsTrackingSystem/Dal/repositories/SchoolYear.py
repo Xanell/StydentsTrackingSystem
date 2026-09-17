@@ -40,7 +40,7 @@ class SchoolYearRepository:     # Репозиторий для работы с 
 
         stmt = select(SchoolYear).order_by(SchoolYear.start_date.desc())
 
-        return list(self.db.scalars(stmt).all())
+        return self.db.scalars(stmt).all()
 
     def get_current(self) -> SchoolYear:
 
@@ -56,7 +56,7 @@ class SchoolYearRepository:     # Репозиторий для работы с 
 
         stmt = (select(SchoolYear).where(SchoolYear.end_date < date.today()).order_by(SchoolYear.end_date.desc()))
 
-        return list(self.db.scalars(stmt).all())
+        return self.db.scalars(stmt).all()
 
     def delete_year(self, year_id: int) -> bool:
 
