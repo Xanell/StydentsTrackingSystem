@@ -41,7 +41,7 @@ class SchoolCalendarRepository:     # Репозиторий для работы
 
         stmt = (select(SchoolCalendar).where(SchoolCalendar.year_id == year_id).order_by(SchoolCalendar.date))
 
-        return list(self.db.scalars(stmt).all())
+        return self.db.scalars(stmt).all()
 
     def get_by_day_type(self, year_id: int, day_type: DayType) -> list[SchoolCalendar]:
 
@@ -54,7 +54,7 @@ class SchoolCalendarRepository:     # Репозиторий для работы
 
         stmt = (select(SchoolCalendar)).where(SchoolCalendar.year_id == year_id, SchoolCalendar.day_type == day_type).order_by(SchoolCalendar.date)
 
-        return list(self.db.scalars(stmt).all())
+        return self.db.scalars(stmt).all()
 
     def get_school_days(self, year_id: int) -> list[SchoolCalendar]:
 
