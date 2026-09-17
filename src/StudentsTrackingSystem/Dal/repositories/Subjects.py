@@ -19,20 +19,21 @@ class SubjectsRepository:
     # Ищет предмет по его id, возвращает объект или None, если не найден
     def get_by_id(self, subject_id: int) -> Subjects | None:
         stmt = select(Subjects).where(Subjects.id == subject_id)
-        return self.session.scalar(stmt).one_or_none()
+        return self.session.scalars(stmt).one_or_none()
 
     # Ищет предмет по имени, возвращает объект или None, если не найден
     def get_by_name(self, name: str) -> Subjects | None:
         stmt = select(Subjects).where(Subjects.name == name)
-        return self.session.scalar(stmt).one_or_none()
+        return self.session.scalars(stmt).one_or_none()
 
     # Возвращает список всех предметов из таблицы
     def get_all(self) -> list[Subjects]:
-        return list(self.session.scalars(select(Subjects)).all())
+        return self.session.scalars(select(Subjects)).all()
 
     # Обновляет имя и/или описание предмета по id, возвращает обновлённый объект или None
     def update(self, subject_id: int, name: str | None = None, description: str | None = None) -> Subjects | None:
         subject = self.get_by_id(subject_id)
+        # Нужны ли проверки ??
         if subject is None:
             return None
         if name is not None:
