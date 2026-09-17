@@ -6,6 +6,13 @@ class UserRoleRepository:
     def __init__(self, session: Session):
         self.db = session
 
+    def create_role(self, name: str) -> UserRole:
+        new_role = UserRole(name = name)
+        self.db.add(new_role)
+        self.db.commit()
+        self.db.refresh(new_role)
+        return new_role
+
     def get_by_name(self, name: str) -> UserRole | None:
         stmt = select(UserRole).where(UserRole.name == name)
         return self.db.scalars(stmt).one_or_none()

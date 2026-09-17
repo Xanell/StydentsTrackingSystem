@@ -1,6 +1,8 @@
-from Dal.database import engine
+from Dal.database import engine, SessionLocal
+import Dal.DTOs
 from Dal.DTOs.Base import Base
 from sqlalchemy import text
+from Core.Seed import role_seed, admin_seed
 
 with engine.connect() as conn:
     row = conn.execute(
@@ -21,3 +23,7 @@ def reset_tables():
 
 if __name__ == "__main__":
     create_tables()
+
+    with SessionLocal() as session:
+        role_seed(session)
+        admin_seed(session)
