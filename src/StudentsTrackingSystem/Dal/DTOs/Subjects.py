@@ -2,7 +2,7 @@ from .Base import Base
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-class Subjects(Base):
+class Subject(Base):
     __tablename__ = "Subjects"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

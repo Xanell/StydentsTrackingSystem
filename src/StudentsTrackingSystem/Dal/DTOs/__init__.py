@@ -1,14 +1,14 @@
 from .Attendance import Attendance
-from .Lessons import Lessons
-from .LessonsPeriods import LessonsPeriods
-from .LessonsResults import LessonsResults
+from .Lessons import Lesson
+from .LessonsPeriods import LessonPeriod
+from .LessonsResults import LessonResult
 from .Schedule import Schedule
 from .SchoolCalendar import SchoolCalendar
-from .SchoolClasses import SchoolClasses
+from .SchoolClasses import SchoolClass
 from .SchoolYear import SchoolYear
-from .Subjects import Subjects
-from .User import Users
+from .Subjects import Subject
+from .User import User
 from .UserRole import UserRole
 from .Base import Base
 
-__all__ = ["Attendance", "Lessons", "LessonsPeriods","LessonsResults","Schedule","SchoolCalendar","SchoolClasses","SchoolYear","Subjects","Users","UserRole","Base"]
+__all__ = ["Attendance", "Lesson", "LessonPeriod","LessonResult","Schedule","SchoolCalendar","SchoolClass","SchoolYear","Subject","User","UserRole","Base"]

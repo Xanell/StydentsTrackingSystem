@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, delete
 from ..DTOs.Schedule import Schedule
 
-
 class ScheduleRepository:       # Репозиторий для работы с расписанием
 
     def __init__(self, db: Session):

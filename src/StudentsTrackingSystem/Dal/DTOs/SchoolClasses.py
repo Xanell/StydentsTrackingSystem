@@ -2,7 +2,7 @@ from .Base import Base
 from sqlalchemy import Integer, String, ForeignKey, SmallInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-class SchoolClasses(Base):
+class SchoolClass(Base):
     __tablename__ = "SchoolClasses"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

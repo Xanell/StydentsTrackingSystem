@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from Core.Enums import GradeType
 
-class LessonsResults(Base):
+class LessonResult(Base):
     __tablename__ = "LessonsResults"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

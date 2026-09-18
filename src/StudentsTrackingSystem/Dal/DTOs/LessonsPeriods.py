@@ -3,7 +3,7 @@ from sqlalchemy import Integer, Time
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import time
 
-class LessonsPeriods(Base):
+class LessonPeriod(Base):
     __tablename__ = "LessonsPeriods"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
