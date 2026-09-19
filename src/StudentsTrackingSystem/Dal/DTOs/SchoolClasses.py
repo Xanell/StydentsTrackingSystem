@@ -1,9 +1,14 @@
 from .Base import Base
-from sqlalchemy import Integer, String, ForeignKey, SmallInteger
+from sqlalchemy import Integer, String, ForeignKey, SmallInteger, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 class SchoolClass(Base):
     __tablename__ = "SchoolClasses"
+    __table_args__ = (
+        UniqueConstraint(
+            "school_year_id", "number", "letter"
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     number: Mapped[int] = mapped_column(SmallInteger, nullable=False)
