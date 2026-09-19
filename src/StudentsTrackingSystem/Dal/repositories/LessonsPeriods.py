@@ -27,9 +27,14 @@ class LessonsPeriodsRepository:     # Репозиторий для работы
     def get_all(self) ->  list[LessonPeriod]:
         return self.db.scalars(select(LessonPeriod)).all()
     # Изменить на конкретные аргументы
-    def update_period(self, period: LessonPeriod, **kwargs) -> LessonPeriod:
-        for key, value in kwargs.items():
-            setattr(period, key, value)
+    def update_period(self, period_id: int, strat_time: time | None = None, end_time: time | None = None) -> LessonPeriod | None:
+        period = self.get_by_id(period_id)
+        if period is None:
+            return None
+        if strat_time is not None:
+            period.start_time = strat_time
+        if end_time is not None:
+            period.end_time = end_time
         self.db.commit()
         self.db.refresh(period)
         return period

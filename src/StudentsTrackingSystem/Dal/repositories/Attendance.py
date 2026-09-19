@@ -25,9 +25,14 @@ class AttendanceRepository:
     def get_all(self) -> list[Attendance]:
         return self.db.scalars(select(Attendance)).all()
 
-    def update_attendance(self, attendance: Attendance, **kwargs) -> Attendance:
-        for key, value in kwargs.items():
-            setattr(attendance, key, value)
+    def update_attendance(self, attendance_id: int, is_present: bool | None = None, reason: str | None = None) -> Attendance | None:
+        attendance = self.get_by_id(attendance_id)
+        if attendance is None:
+            return None
+        if is_present is not None:
+            attendance.is_present = is_present
+        if reason is not None:
+            attendance.reason = reason
         self.db.commit()
         self.db.refresh(attendance)
         return attendance

@@ -29,9 +29,24 @@ class UserRepository():
         return self.db.scalars(select(User)).all()
 
     # Переделать на конкретные аргументы 
-    def update_user(self, user: User, **kwargs) -> User:
-        for key, value in kwargs.items():
-            setattr(user, key, value)
+    def update_user(self, user_id: int ,username: str | None = None, password: str | None = None, first_name: str | None = None, last_name: str | None = None, middle_name: str | None = None, role_id: int | None = None, class_id: int | None = None) -> User | None:
+        user = self.get_by_id(user_id)
+        if user is None:
+            return None
+        if username is not None:
+            user.username = username
+        if password is not None:
+            user.password = password
+        if first_name is not None:
+            user.first_name = first_name
+        if last_name is not None:
+            user.last_name = last_name
+        if middle_name is not None:
+            user.middle_name = middle_name
+        if role_id is not None:
+            user.role_id = role_id
+        if class_id is not None:
+            user.class_id = class_id
         self.db.commit()
         self.db.refresh(user)
         return user
