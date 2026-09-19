@@ -1,5 +1,5 @@
-from Dal.repositories.User import UserRepository
-from Dal.repositories.UserRole import UserRoleRepository
+from Dal.Repositories.User import UserRepository
+from Dal.Repositories.UserRole import UserRoleRepository
 from Core.Enums import RoleName
 
 def role_seed(session):

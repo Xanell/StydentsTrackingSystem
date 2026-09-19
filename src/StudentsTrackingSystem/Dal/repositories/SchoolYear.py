@@ -53,7 +53,7 @@ class SchoolYearRepository:     # Репозиторий для работы с 
 
         stmt = select(SchoolYear).where(SchoolYear.is_current == True)
 
-        return self.db.scalars(stmt).first()
+        return self.db.scalars(stmt).one_or_none()
 
     def get_past_years(self) -> list[SchoolYear]:
 
@@ -62,6 +62,15 @@ class SchoolYearRepository:     # Репозиторий для работы с 
         stmt = (select(SchoolYear).where(SchoolYear.end_date < date.today()).order_by(SchoolYear.end_date.desc()))
 
         return self.db.scalars(stmt).all()
+
+    def set_current(self, year_id: int, is_current: bool) -> SchoolYear | None:
+        year = self.get_by_id(year_id)
+        if year is None:
+            return None
+        year.is_current = is_current
+        self.db.commit()
+        self.db.refresh(year)
+        return year
 
     def delete_year(self, year_id: int) -> bool:
 
