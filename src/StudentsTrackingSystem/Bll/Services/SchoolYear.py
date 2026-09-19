@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from Bll.Schemas.SchoolYear import SchoolYearCreate, SchoolYearDetail, SchoolYearShort
-from Dal.Repositories.SchoolYear import SchoolYearRepository
+from Dal.repositories.SchoolYear import SchoolYearRepository
 
 class SchoolYearService:
     def __init__(self, session: Session):
