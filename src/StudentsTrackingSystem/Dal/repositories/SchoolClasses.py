@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from ..DTOs.SchoolClasses import SchoolClass
 
 class SchoolClassesRepository:      # Репозиторий для работы с школьными классами
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, session: Session):
+        self.db = session
 
     def create_class(self, number: int, letter: str, school_year_id: int) -> SchoolClass:
 
@@ -19,7 +19,7 @@ class SchoolClassesRepository:      # Репозиторий для работы
 
         return school_class
 
-    def get_class_by_id(self, class_id: int) -> SchoolClass:
+    def get_class_by_id(self, class_id: int) -> SchoolClass | None:
 
         """Получить класс по ID"""
 
@@ -42,14 +42,9 @@ class SchoolClassesRepository:      # Репозиторий для работы
         return self.db.scalars(stmt).all()
 
     def delete_class(self, class_id: int) -> bool:
-
-        """Удалить класс"""
-
-        school_class = self.db.get(SchoolClass, class_id)
-        
+        school_class = self.get_class_by_id(class_id)
+        if school_class is None:
+            return False
         self.db.delete(school_class)
         self.db.commit()
-
         return True
-
-    

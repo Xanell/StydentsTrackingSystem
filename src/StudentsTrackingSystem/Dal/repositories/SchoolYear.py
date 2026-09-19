@@ -5,14 +5,19 @@ from ..DTOs.SchoolYear import SchoolYear
 
 class SchoolYearRepository:     # Репозиторий для работы с учебными годами
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, session: Session):
+        self.db = session
 
-    def create_schoolyear(self, name: str, start_date: date, end_date: date, is_current: bool = False) -> SchoolYear:
+    def create_school_year(self, name: str, start_date: date, end_date: date, is_current: bool = False) -> SchoolYear:
 
         """Создать учебный год"""
 
-        school_year = SchoolYear(name = name, start_date = start_date, end_date = end_date, is_current = is_current)
+        school_year = SchoolYear(
+            name=name, 
+            start_date=start_date, 
+            end_date=end_date, 
+            is_current=is_current
+        )
 
         self.db.add(school_year)
         self.db.commit()
@@ -20,19 +25,19 @@ class SchoolYearRepository:     # Репозиторий для работы с 
 
         return school_year
 
-    def get_by_id(self, year_id: int) -> SchoolYear:
+    def get_by_id(self, year_id: int) -> SchoolYear | None:
 
         """Получить школьный год по ID"""
 
         return self.db.get(SchoolYear, year_id)
 
-    def get_by_name(self, name: str) -> SchoolYear:
+    def get_by_name(self, name: str) -> SchoolYear | None:
 
         """Получить по названию"""
 
         stmt = select(SchoolYear).where(SchoolYear.name == name)
 
-        return self.db.scalars(stmt).first()
+        return self.db.scalars(stmt).one_or_none()
 
     def get_all(self) -> list[SchoolYear]:
 
@@ -42,7 +47,7 @@ class SchoolYearRepository:     # Репозиторий для работы с 
 
         return self.db.scalars(stmt).all()
 
-    def get_current(self) -> SchoolYear:
+    def get_current(self) -> SchoolYear | None:
 
         """Получить текущий учебный год"""
 
@@ -64,7 +69,7 @@ class SchoolYearRepository:     # Репозиторий для работы с 
 
         school_year = self.db.get(SchoolYear, year_id)
 
-        if not school_year:
+        if school_year is None:
             return False
         
         self.db.delete(school_year)
@@ -72,4 +77,3 @@ class SchoolYearRepository:     # Репозиторий для работы с 
 
         return True
 
-    

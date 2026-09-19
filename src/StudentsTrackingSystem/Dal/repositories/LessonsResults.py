@@ -10,7 +10,7 @@ class LessonsResultsRepository:
         self.db = session
 
     # Создаёт новую оценку и сохраняет в БД
-    def add_result(self, lesson_id: int, student_id: int, file: str | None, grade: int, grade_type: GradeType, submitted_at: datetime) -> LessonResult:
+    def create_result(self, lesson_id: int, student_id: int, file: str | None, grade: int, grade_type: GradeType, submitted_at: datetime) -> LessonResult:
         result = LessonResult(
             lesson_id=lesson_id,
             student_id=student_id,
@@ -26,8 +26,7 @@ class LessonsResultsRepository:
 
     # Ищет оценку по id
     def get_by_id(self, result_id: int) -> LessonResult | None:
-        stmt = select(LessonResult).where(LessonResult.id == result_id)
-        return self.db.scalars(stmt).one_or_none()
+        return self.db.get(LessonResult, result_id)
 
     # Возвращает все оценки
     def get_all(self) -> list[LessonResult]:
@@ -53,7 +52,7 @@ class LessonsResultsRepository:
         return self.db.scalars(stmt).one_or_none()
 
     # Обновляет оценку
-    def update_lesson_result(self, result_id: int, grade: int | None = None, grade_type: str | None = None, submitted_at: datetime | None = None) -> LessonResult | None:
+    def update_lesson_result(self, result_id: int, grade: int | None = None, grade_type: GradeType | None = None, submitted_at: datetime | None = None) -> LessonResult | None:
         result = self.get_by_id(result_id)
         if result is None:
             return None
@@ -68,7 +67,7 @@ class LessonsResultsRepository:
         return result
 
     # Удаляет оценку по id
-    def delete(self, result_id: int) -> bool:
+    def delete_result(self, result_id: int) -> bool:
         result = self.get_by_id(result_id)
         if result is None:
             return False

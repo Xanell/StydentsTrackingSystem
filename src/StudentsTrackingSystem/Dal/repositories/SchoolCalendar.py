@@ -1,13 +1,13 @@
 from datetime import date
 from sqlalchemy.orm import Session
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from ..DTOs.SchoolCalendar import SchoolCalendar
 from Core.Enums import DayType
 
 class SchoolCalendarRepository:     # Репозиторий для работы с календарём учебного года
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, session: Session):
+        self.db = session
 
     def create_calendar(self, year_id: int, date: date, quarter: int, day_type: DayType) -> SchoolCalendar:
 
@@ -21,19 +21,19 @@ class SchoolCalendarRepository:     # Репозиторий для работы
 
         return calendar
 
-    def get_by_id(self, calendar_id: int) -> SchoolCalendar:
+    def get_by_id(self, calendar_id: int) -> SchoolCalendar | None:
 
         """Получить по ID"""
 
         return self.db.get(SchoolCalendar, calendar_id)
 
-    def get_by_date(self, year_id: int, target_date: date) -> SchoolCalendar:
+    def get_by_date(self, year_id: int, target_date: date) -> SchoolCalendar | None:
 
         """Получить по конкретной дате"""
 
         stmt = select(SchoolCalendar).where(SchoolCalendar.year_id == year_id, SchoolCalendar.date == target_date)
 
-        return self.db.scalars(stmt).first()
+        return self.db.scalars(stmt).one_or_none()
 
     def get_by_year(self, year_id: int) -> list[SchoolCalendar]:
 
@@ -74,14 +74,15 @@ class SchoolCalendarRepository:     # Репозиторий для работы
 
         return self.get_by_day_type(year_id, DayType.VACATION)
 
-    def update_by_date(self, year_id: int, target_date: date, day_type: DayType) -> SchoolCalendar:
+    def update_by_date(self, year_id: int, target_date: date, day_type: DayType) -> SchoolCalendar | None:
 
         """Обновить тип дня по дате"""
 
         calendar = self.get_by_date(year_id, target_date)
-
+        if calendar is None:
+            return None
+        
         calendar.day_type = day_type
-
         self.db.commit()
         self.db.refresh(calendar)
 
@@ -91,25 +92,19 @@ class SchoolCalendarRepository:     # Репозиторий для работы
 
         """Отметить день как учебный"""
 
-        result = self.update_by_date(year_id, target_date, DayType.SCHOOL_DAY)
-
-        return result
+        return self.update_by_date(year_id, target_date, DayType.SCHOOL_DAY) is not None
 
     def mark_as_holiday(self, year_id: int, target_date: date) -> bool:
 
         """Отметить день как праздничный"""
 
-        result = self.update_by_date(year_id, target_date, DayType.HOLIDAY)
-
-        return result
+        return self.update_by_date(year_id, target_date, DayType.HOLIDAY) is not None
 
     def mark_as_vacation(self, year_id: int, target_date: date) -> bool:
 
         """Отметить день как каникулы"""
 
-        result = self.update_by_date(year_id, target_date, DayType.VACATION)
-
-        return result
+        return self.update_by_date(year_id, target_date, DayType.VACATION) is not None
 
     def delete_record(self, calendar_id: int) -> bool:
 
@@ -123,12 +118,9 @@ class SchoolCalendarRepository:     # Репозиторий для работы
         return True
 
     def delete_by_date(self, year_id: int, target_date: date) -> bool:
-
-        """Удалить запись по дате"""
-
-        stmt = delete(SchoolCalendar).where(SchoolCalendar.year_id == year_id, SchoolCalendar.date == target_date)
-
-        self.db.delete(stmt)
+        calendar = self.get_by_date(year_id, target_date)
+        if calendar is None:
+            return False
+        self.db.delete(calendar)
         self.db.commit()
-
         return True

@@ -8,7 +8,7 @@ class SubjectsRepository:
         self.db = session
 
     # Создаёт новый предмет и сохраняет его в БД, возвращает объект с присвоенным id
-    def add_a_subject(self, name: str, description: str) -> Subject:
+    def create_subject(self, name: str, description: str) -> Subject:
         subject = Subject(name=name, description=description)
         self.db.add(subject)
         self.db.commit()
@@ -17,8 +17,7 @@ class SubjectsRepository:
 
     # Ищет предмет по его id, возвращает объект или None, если не найден
     def get_by_id(self, subject_id: int) -> Subject | None:
-        stmt = select(Subject).where(Subject.id == subject_id)
-        return self.db.scalars(stmt).one_or_none()
+        return self.db.get(Subject, subject_id)
 
     # Ищет предмет по имени, возвращает объект или None, если не найден
     def get_by_name(self, name: str) -> Subject | None:
@@ -32,7 +31,6 @@ class SubjectsRepository:
     # Обновляет имя и/или описание предмета по id, возвращает обновлённый объект или None
     def update(self, subject_id: int, name: str | None = None, description: str | None = None) -> Subject | None:
         subject = self.get_by_id(subject_id)
-        # Нужны ли проверки ??
         if subject is None:
             return None
         if name is not None:

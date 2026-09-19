@@ -6,12 +6,12 @@ class AttendanceRepository:
     def __init__(self, session: Session):
         self.db = session
 
-    def create_attendance(self, lesson_id: int, student_id: int, is_present: bool, reason: str | None) -> Attendance:
+    def create_attendance(self, lesson_id: int, student_id: int, is_present: bool, reason: str | None = None) -> Attendance:
         new_attendance = Attendance(
-            lesson_id = lesson_id,
-            student_id = student_id,
-            is_present = is_present,
-            reason = reason
+            lesson_id=lesson_id,
+            student_id=student_id,
+            is_present=is_present,
+            reason=reason
             )
         self.db.add(new_attendance)
         self.db.commit()
@@ -37,9 +37,13 @@ class AttendanceRepository:
         self.db.refresh(attendance)
         return attendance
 
-    def delete_attendance(self, attendance: Attendance) -> None:
+    def delete_attendance(self, attendance_id: int) -> bool:
+        attendance = self.get_by_id(attendance_id)
+        if attendance is None:
+            return False
         self.db.delete(attendance)
         self.db.commit()
+        return True
 
     def get_by_lesson(self, lesson_id: int) -> list[Attendance]:
         stmt = select(Attendance).where(Attendance.lesson_id == lesson_id)
@@ -49,8 +53,8 @@ class AttendanceRepository:
         stmt = (
             select(Attendance)
             .where(
-                Attendance.lesson_id == lesson_id, 
+                Attendance.lesson_id == lesson_id,
                 Attendance.student_id == student_id
-                )
+            )
         )
         return self.db.scalars(stmt).one_or_none()

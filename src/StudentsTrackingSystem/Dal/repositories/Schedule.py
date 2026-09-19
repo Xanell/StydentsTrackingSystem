@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import select, delete
+from sqlalchemy import select
 from ..DTOs.Schedule import Schedule
 
 class ScheduleRepository:       # Репозиторий для работы с расписанием
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, session: Session):
+        self.db = session
 
     """Создать расписание"""
 
@@ -33,13 +33,13 @@ class ScheduleRepository:       # Репозиторий для работы с 
 
         return schedule
 
-    def get_shedule_by_id(self, schedule_id: int) -> Schedule:
+    def get_schedule_by_id(self, schedule_id: int) -> Schedule | None:
 
         """Получить по ID"""
 
         return self.db.get(Schedule, schedule_id)
 
-    def get_all_shedules(self) -> list[Schedule]:
+    def get_all_schedule(self) -> list[Schedule]:
 
         """Получить все записи"""
 
@@ -47,7 +47,7 @@ class ScheduleRepository:       # Репозиторий для работы с 
 
         return self.db.scalars(stmt).all()
 
-    def get_shedule_by_class(self, class_id: int) -> list[Schedule]:
+    def get_schedule_by_class(self, class_id: int) -> list[Schedule]:
 
         """Получить расписание класса"""
 
@@ -55,7 +55,7 @@ class ScheduleRepository:       # Репозиторий для работы с 
 
         return self.db.scalars(stmt).all()
 
-    def get_shedule_by_teacher(self, teacher_id: int) -> list[Schedule]:
+    def get_schedule_by_teacher(self, teacher_id: int) -> list[Schedule]:
 
         """Получить расписание учителя"""
 
@@ -63,14 +63,10 @@ class ScheduleRepository:       # Репозиторий для работы с 
 
         return self.db.scalars(stmt).all()
 
-    def delete_record_shedule(self, schedule_id: int) -> bool:
-
-        """Удалить запись"""
-
-        schedule = self.db.get(Schedule, schedule_id)
-
+    def delete_schedule(self, schedule_id: int) -> bool:
+        schedule = self.get_schedule_by_id(schedule_id)
+        if schedule is None:
+            return False
         self.db.delete(schedule)
         self.db.commit()
-        
         return True
-

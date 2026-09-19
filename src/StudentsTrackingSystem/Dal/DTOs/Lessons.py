@@ -7,7 +7,7 @@ class Lesson(Base):
     __tablename__ = "Lessons"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    date: Mapped[date] = mapped_column(Date)
+    lesson_date: Mapped[date] = mapped_column(Date)
     topic: Mapped[str] = mapped_column(String(255))
     homework_description: Mapped[str | None] = mapped_column(String(255))
     homework_due_date: Mapped[date | None] = mapped_column(Date)

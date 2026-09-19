@@ -3,7 +3,7 @@ from sqlalchemy import select
 from ..DTOs.User import User
 from ..DTOs.UserRole import UserRole
 
-class UserRepository():
+class UserRepository:
     def __init__(self, session: Session):
         self.db = session
 
@@ -51,9 +51,13 @@ class UserRepository():
         self.db.refresh(user)
         return user
 
-    def delete_user(self, user: User) -> None:
+    def delete_user(self, user_id: int) -> bool:
+        user = self.get_by_id(user_id)
+        if user is None:
+            return False
         self.db.delete(user)
         self.db.commit()
+        return True
 
     def get_by_username(self, username: str) -> User | None:
         stmt = select(User).where(User.username == username)
