@@ -15,7 +15,7 @@ class User(Base):
     class_id : Mapped[int | None] = mapped_column(ForeignKey("SchoolClasses.id"))
 
     role: Mapped["UserRole"] = relationship(back_populates="users")
-    school_class: Mapped["SchoolClasses | None"] = relationship(back_populates="students")
+    school_class: Mapped["SchoolClass | None"] = relationship(back_populates="students")
     schedules: Mapped[list["Schedule"]] = relationship(back_populates="teacher")
-    lesson_results: Mapped[list["LessonsResults"]] = relationship(back_populates="student")
+    lesson_results: Mapped[list["LessonResult"]] = relationship(back_populates="student")
     attendances: Mapped[list["Attendance"]] = relationship(back_populates="student")

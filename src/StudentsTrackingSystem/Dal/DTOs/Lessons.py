@@ -15,5 +15,5 @@ class Lesson(Base):
     schedule_id: Mapped[int] = mapped_column(ForeignKey("Schedule.id"))
 
     schedule: Mapped["Schedule"] = relationship(back_populates="lessons")
-    results: Mapped[list["LessonsResults"]] = relationship(back_populates="lesson")
+    results: Mapped[list["LessonResult"]] = relationship(back_populates="lesson")
     attendances: Mapped[list["Attendance"]] = relationship(back_populates="lesson")

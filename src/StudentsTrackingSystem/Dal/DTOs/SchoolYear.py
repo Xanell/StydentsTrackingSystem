@@ -12,5 +12,6 @@ class SchoolYear(Base):
     end_date: Mapped[date] = mapped_column(Date)
     is_current: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    school_classes: Mapped[list["SchoolClasses"]] = relationship(back_populates="school_year")
+    school_classes: Mapped[list["SchoolClass"]] = relationship(back_populates="school_year")
     school_calendar: Mapped[list["SchoolCalendar"]] = relationship(back_populates="school_year")
+    quarters: Mapped[list["SchoolQuarter"]] = relationship(back_populates="school_year")

@@ -10,6 +10,6 @@ class SchoolClass(Base):
     letter: Mapped[str] = mapped_column(String(1), nullable=False)
     school_year_id: Mapped[int] = mapped_column(ForeignKey("SchoolYear.id"))
 
-    students: Mapped[list["Users"]] = relationship(back_populates="school_class")
+    students: Mapped[list["User"]] = relationship(back_populates="school_class")
     school_year: Mapped["SchoolYear"] = relationship(back_populates="school_classes")
     schedules: Mapped[list["Schedule"]] = relationship(back_populates="school_class")
