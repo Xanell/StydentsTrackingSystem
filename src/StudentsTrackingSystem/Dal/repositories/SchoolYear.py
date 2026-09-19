@@ -72,17 +72,17 @@ class SchoolYearRepository:     # Репозиторий для работы с 
         self.db.refresh(year)
         return year
 
-    def delete_year(self, year_id: int) -> bool:
-
-        """Удалить учебный год"""
-
-        school_year = self.db.get(SchoolYear, year_id)
-
-        if school_year is None:
-            return False
-        
-        self.db.delete(school_year)
+    def update_year(self, year_id: int, start_date: date | None = None, end_date: date | None = None, name: str | None = None) -> SchoolYear | None:
+        year = self.get_by_id(year_id)
+        if year is None:
+            return None
+        if start_date is not None:
+            year.start_date = start_date
+        if end_date is not None:
+            year.end_date = end_date
+        if name is not None:
+            year.name = name
         self.db.commit()
-
-        return True
+        self.db.refresh(year)
+        return year
 
