@@ -16,3 +16,7 @@ class SchoolYearDetail(BaseSchema):
 class SchoolYearCreate(BaseSchema):
     start_date: date
     end_date: date
+
+class SchoolYearUpdate(BaseSchema):
+    start_date: date | None = None
+    end_date: date | None = None
