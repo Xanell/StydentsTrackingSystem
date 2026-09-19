@@ -1,26 +1,28 @@
 from datetime import date
-
 from sqlalchemy.orm import Session
-
 from Bll.Schemas.SchoolQuarter import SchoolQuarterCreate, SchoolQuarterDetail, SchoolQuarterShort, SchoolQuarterUpdate
-
 from Dal.repositories.SchoolQuarter import QuarterRepository
 from Dal.repositories.SchoolYear import SchoolYearRepository
 
 class SchoolQuarterService:
     def __init__(self, session: Session):
+
         self.schoolquarter_repo = QuarterRepository(session)
         self.schoolyear_repo = SchoolYearRepository(session)
 
     def create_quarter(self, quarter: SchoolQuarterCreate) -> SchoolQuarterDetail:
 
-        school_year_id = quarter.school_year_id,
-        number = quarter.number,
-        start_date = quarter.start_date,
-        end_date=end_date = quarter.end_date
-
-        if end_date <= start_date:
+        new_quarter = self.schoolquarter_repo.create_quarter(
+        school_year_id=quarter.school_year_id,
+        number=quarter.number,
+        start_date=quarter.start_date,
+        end_date=quarter.end_date,
+        )
+      
+        if quarter.end_date <= quarter.start_date:
             raise ValueError ("Ошибка: Дата начала позже даты окончания!")
+
+        return SchoolQuarterDetail.model_validate(new_quarter)
 
     def get_by_id(self, quarter_id: int) -> SchoolQuarterDetail:
 
