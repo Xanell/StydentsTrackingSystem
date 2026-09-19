@@ -18,5 +18,5 @@ class LessonResult(Base):
     ))
     submitted_at: Mapped[datetime] = mapped_column(TIMESTAMP)
 
-    lesson: Mapped["Lessons"] = relationship(back_populates="results")
-    student: Mapped["Users"] = relationship(back_populates="lesson_results")
+    lesson: Mapped["Lesson"] = relationship(back_populates="results")
+    student: Mapped["User"] = relationship(back_populates="lesson_results")

@@ -8,4 +8,4 @@ class UserRole(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(10), unique=True)
     
-    users: Mapped[list["Users"]] = relationship(back_populates="role")
+    users: Mapped[list["User"]] = relationship(back_populates="role")

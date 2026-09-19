@@ -9,11 +9,11 @@ class SchoolCalendarRepository:     # Репозиторий для работы
     def __init__(self, session: Session):
         self.db = session
 
-    def create_calendar(self, year_id: int, date: date, quarter: int, day_type: DayType) -> SchoolCalendar:
+    def create_calendar(self, year_id: int, calendar_date: date, quarter: int, day_type: DayType) -> SchoolCalendar:
 
         """Создать запись в календаре"""
 
-        calendar = SchoolCalendar(year_id = year_id, date = date, quarter = quarter, day_type = day_type)
+        calendar = SchoolCalendar(year_id = year_id, calendar_date = calendar_date, quarter = quarter, day_type = day_type)
 
         self.db.add(calendar)
         self.db.commit()
@@ -31,7 +31,7 @@ class SchoolCalendarRepository:     # Репозиторий для работы
 
         """Получить по конкретной дате"""
 
-        stmt = select(SchoolCalendar).where(SchoolCalendar.year_id == year_id, SchoolCalendar.date == target_date)
+        stmt = select(SchoolCalendar).where(SchoolCalendar.year_id == year_id, SchoolCalendar.calendar_date == target_date)
 
         return self.db.scalars(stmt).one_or_none()
 
@@ -39,7 +39,7 @@ class SchoolCalendarRepository:     # Репозиторий для работы
 
         """Получить весь календарь учебного года"""
 
-        stmt = (select(SchoolCalendar).where(SchoolCalendar.year_id == year_id).order_by(SchoolCalendar.date))
+        stmt = (select(SchoolCalendar).where(SchoolCalendar.year_id == year_id).order_by(SchoolCalendar.calendar_date))
 
         return self.db.scalars(stmt).all()
 
@@ -52,7 +52,7 @@ class SchoolCalendarRepository:     # Репозиторий для работы
         VACATION = каникулы
         """
 
-        stmt = (select(SchoolCalendar)).where(SchoolCalendar.year_id == year_id, SchoolCalendar.day_type == day_type).order_by(SchoolCalendar.date)
+        stmt = (select(SchoolCalendar)).where(SchoolCalendar.year_id == year_id, SchoolCalendar.day_type == day_type).order_by(SchoolCalendar.calendar_date)
 
         return self.db.scalars(stmt).all()
 

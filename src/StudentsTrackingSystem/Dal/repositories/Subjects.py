@@ -29,7 +29,7 @@ class SubjectsRepository:
         return self.db.scalars(select(Subject)).all()
 
     # Обновляет имя и/или описание предмета по id, возвращает обновлённый объект или None
-    def update(self, subject_id: int, name: str | None = None, description: str | None = None) -> Subject | None:
+    def update_subject(self, subject_id: int, name: str | None = None, description: str | None = None) -> Subject | None:
         subject = self.get_by_id(subject_id)
         if subject is None:
             return None
@@ -42,7 +42,7 @@ class SubjectsRepository:
         return subject
 
     # Удаляет предмет по id, возвращает True если удалён, False если не найден
-    def delete(self, subject_id: int) -> bool:
+    def delete_subject(self, subject_id: int) -> bool:
         subject = self.get_by_id(subject_id)
         if subject is None:
             return False
