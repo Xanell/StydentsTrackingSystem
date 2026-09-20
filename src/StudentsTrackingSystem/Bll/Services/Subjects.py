@@ -112,14 +112,3 @@ class SubjectService:
             description=data.description
         )
         return SubjectDetail.model_validate(updated)
-
-    def delete_subject(self, subject_id: int) -> None:
-        curr_subject = self.subject_repo.get_by_id(subject_id)
-        if curr_subject is None:
-            raise ValueError("Ошибка!")
-
-        if curr_subject.schedule: 
-            raise ValueError("Ошибка предмет есть в расписание!")
-
-        self.subject_repo.delete_subject(subject_id)
->>>>>>> origin/master
