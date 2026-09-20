@@ -21,6 +21,8 @@ class LessonsPeriodsService:
         if period is None:
             raise ValueError("Ошибка: не найден!")
 
+        return LessonPeriodDetail.model_validate(period)
+
     def get_all_periods(self) -> list[LessonPeriodDetail]:
 
         all_periods = self.period_repo.get_all()
@@ -44,7 +46,7 @@ class LessonsPeriodsService:
 
         # тоже возможно cюда еще надо добавить проверки на пересечение с другими периодами и уникальность начала start_time
 
-        update_period = self.period_repo.update_period(start_time=data.start_time, end_time=data.end_time)
+        update_period = self.period_repo.update_period(period_id, start_time=new_start_time, end_time=new_end_time)
 
         return LessonPeriodDetail.model_validate(update_period)
         
