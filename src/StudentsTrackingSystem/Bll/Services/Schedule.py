@@ -128,7 +128,6 @@ class ScheduleService:
                     f"В этот день (period {schedule.period_id}) у класса уже есть урок"
                 )
 
-        # Обновление
         update = self.schedule_repo.update_schedule(
             schedule_id,
             subject_id=new_subject_id,

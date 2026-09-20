@@ -13,14 +13,14 @@ class GradeType(str, Enum):
     TEST = "test"
 
 class RoleName:
-    USER = "user"
+    STUDENT = "student"
     TEACHER = "teacher"
     ADMIN = "admin"
 
-    ALL = (USER, TEACHER, ADMIN)
+    ALL = (STUDENT, TEACHER, ADMIN)
 
 
 class RoleLabel:
-    USER = "Ученик"
+    STUDENT = "Ученик"
     TEACHER = "Учитель"
     ADMIN = "Администратор"
