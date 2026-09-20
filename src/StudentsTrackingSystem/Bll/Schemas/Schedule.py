@@ -1,7 +1,7 @@
 from Bll.Schemas.Base import BaseSchema
 from Bll.Schemas.User import UserShort   # ← импорт user, но user не импортирует schedule
 from Bll.Schemas.Subject import SubjectShort
-from Bll.Schemas.SchoolClass import SchoolClassShort
+from Bll.Schemas.SchoolClasses import SchoolClassShort
 from Bll.Schemas.LessonsPeriods import LessonPeriodDetail
 
 class ScheduleDetail(BaseSchema):

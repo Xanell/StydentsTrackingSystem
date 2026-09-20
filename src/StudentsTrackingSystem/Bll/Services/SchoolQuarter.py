@@ -83,7 +83,4 @@ class SchoolQuarterService:
             start_date=new_start,
             end_date=new_end,
         )
-        if updated is None:
-            raise ValueError(f"Четверть с id={quarter_id} не найдена")
-
         return SchoolQuarterDetail.model_validate(updated)
