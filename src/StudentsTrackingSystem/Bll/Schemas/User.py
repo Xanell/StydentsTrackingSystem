@@ -36,3 +36,8 @@ class UserUpdate(BaseSchema):
     last_name: str | None = None
     role_id: int | None = None
     class_id: int | None = None
+
+class UserPasswordResetResponse(BaseSchema):
+    id: int
+    username: str
+    password: str
