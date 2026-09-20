@@ -97,16 +97,13 @@ class UserService:
         new_role_id = data.role_id or user.role_id
         new_class_id = data.class_id or user.class_id
 
-        # Получаем роль один раз
         role = self.user_role_repo.get_by_id(new_role_id)
         if role is None:
             raise ValueError(f"Роль с id={new_role_id} не найдена")
 
-        # Автосброс класса при смене роли на не-ученика
         if new_role_id != user.role_id and role.name != RoleName.USER:
             new_class_id = None
 
-        # Если класс указан — только ученик может его иметь
         if new_class_id is not None:
             if role.name != RoleName.USER:
                 raise ValueError("Только ученик может быть привязан к классу")
