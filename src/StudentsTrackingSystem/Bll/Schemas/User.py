@@ -1,6 +1,6 @@
 from Bll.Schemas.Base import BaseSchema
 from Bll.Schemas.UserRole import UserRoleDetail
-from Bll.Schemas.SchoolClass import SchoolClassShort
+from Bll.Schemas.SchoolClasses import SchoolClassShort
 
 class UserShort(BaseSchema):
     id: int
