@@ -63,6 +63,14 @@ class ScheduleRepository:       # Репозиторий для работы с 
 
         return self.db.scalars(stmt).all()
 
+    def get_by_class_day_period(self, class_id: int, day_of_week: int, period_id: int) -> Schedule | None:
+        stmt = select(Schedule).where(
+            Schedule.class_id == class_id,
+            Schedule.day_of_week == day_of_week,
+            Schedule.period_id == period_id,
+        )
+        return self.db.scalars(stmt).one_or_none()
+
     def update_schedule(
         self,
         schedule_id: int,

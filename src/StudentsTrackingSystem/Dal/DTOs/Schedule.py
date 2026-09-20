@@ -1,10 +1,14 @@
 from .Base import Base
-from sqlalchemy import Integer, String, ForeignKey, SmallInteger
+from sqlalchemy import Integer, String, ForeignKey, SmallInteger, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 class Schedule(Base):
     __tablename__ = "Schedule"
-
+    __table_args__ = (
+        UniqueConstraint(
+        "class_id", "day_of_week", "period_id",
+        ),
+    )
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     class_id: Mapped[int] = mapped_column(ForeignKey("SchoolClasses.id"))
     subject_id: Mapped[int] = mapped_column(ForeignKey("Subjects.id"))
