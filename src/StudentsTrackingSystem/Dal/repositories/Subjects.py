@@ -40,12 +40,3 @@ class SubjectsRepository:
         self.db.commit()
         self.db.refresh(subject)
         return subject
-
-    # Удаляет предмет по id, возвращает True если удалён, False если не найден
-    def delete_subject(self, subject_id: int) -> bool:
-        subject = self.get_by_id(subject_id)
-        if subject is None:
-            return False
-        self.db.delete(subject)
-        self.db.commit()
-        return True

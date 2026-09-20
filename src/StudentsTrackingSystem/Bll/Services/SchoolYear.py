@@ -2,11 +2,13 @@ from sqlalchemy.orm import Session
 from Bll.Schemas.SchoolYear import SchoolYearCreate, SchoolYearDetail, SchoolYearShort, SchoolYearUpdate
 from Dal.Repositories.SchoolYear import SchoolYearRepository
 from Dal.Repositories.SchoolCalendar import SchoolCalendarRepository
+from Dal.Repositories.SchoolQuarter import QuarterRepository
 
 class SchoolYearService:
     def __init__(self, session: Session):
         self.school_year_repo = SchoolYearRepository(session)
         self.school_calendar_repo = SchoolCalendarRepository(session)
+        self.school_quarter_repo = QuarterRepository(session)
 
     def create_school_year(self, data: SchoolYearCreate) -> SchoolYearDetail:
         start_date = data.start_date
@@ -37,12 +39,13 @@ class SchoolYearService:
         # Если меняются границы — календарь должен быть пустым
         bounds_changed = (new_start != year.start_date) or (new_end != year.end_date)
         if bounds_changed:
-            existing_calendar = self.school_calendar_repo.get_by_year(year_id)
-            if existing_calendar:
-                raise ValueError(
-                    "Нельзя менять границы года: сначала удалите календарь"
-                )
+            if self.school_calendar_repo.get_by_year(year_id):
+                raise ValueError("Нельзя менять границы года: сначала удалите календарь")
 
+            for quarter in self.school_quarter_repo.get_by_year(year_id):
+                if quarter.start_date < new_start or quarter.end_date > new_end:
+                    raise ValueError(f"Четверть {quarter.number} выходит за новые границы года")
+        
         new_name = f"{new_start.year}/{new_end.year}"
         if new_name != year.name:
             existing = self.school_year_repo.get_by_name(new_name)

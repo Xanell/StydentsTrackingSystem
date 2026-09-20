@@ -49,11 +49,3 @@ class QuarterRepository:
         self.db.commit()
         self.db.refresh(quarter)
         return quarter
-
-    def delete_quarter(self, quarter_id: int) -> bool:
-        quarter = self.get_by_id(quarter_id)
-        if quarter is None:
-            return False
-        self.db.delete(quarter)
-        self.db.commit()
-        return True
