@@ -24,7 +24,15 @@ class SchoolClassesRepository:      # Репозиторий для работы
         """Получить класс по ID"""
 
         return self.db.get(SchoolClass, class_id)
-
+    
+    def get_by_number_letter_year(self, number: int, letter: str, school_year_id: int) -> SchoolClass | None:
+        stmt = select(SchoolClass).where(
+            SchoolClass.number == number,
+            SchoolClass.letter == letter,
+            SchoolClass.school_year_id == school_year_id
+        )
+        return self.db.scalars(stmt).one_or_none()
+        
     def get_all_classes(self) -> list[SchoolClass]:
 
         """Получить все классы"""
@@ -40,6 +48,19 @@ class SchoolClassesRepository:      # Репозиторий для работы
         stmt = (select(SchoolClass).where(SchoolClass.school_year_id == school_year_id).order_by(SchoolClass.number, SchoolClass.letter))
 
         return self.db.scalars(stmt).all()
+
+    def update_class(self, class_id: int, number: int | None = None, letter: str | None = None) -> SchoolClass | None:
+        school_class = self.get_class_by_id(class_id)
+        if school_class is None:
+            return None
+        if number is not None:
+            school_class.number = number
+        if letter is not None:
+            school_class.letter = letter.upper()
+
+        self.db.commit()
+        self.db.refresh(school_class)
+        return school_class
 
     def delete_class(self, class_id: int) -> bool:
         school_class = self.get_class_by_id(class_id)

@@ -49,7 +49,7 @@ class SchoolYearService:
         new_name = f"{new_start.year}/{new_end.year}"
         if new_name != year.name:
             existing = self.school_year_repo.get_by_name(new_name)
-            if existing is not None and existing.id != year_id:
+            if existing is not None:
                 raise ValueError(f"Год '{new_name}' уже существует")
 
         updated = self.school_year_repo.update_year(
