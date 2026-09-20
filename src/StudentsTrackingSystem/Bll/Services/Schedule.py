@@ -93,7 +93,8 @@ class ScheduleService:
             result.append(ScheduleDetail.model_validate(schedule))
         return result
 
-    def update_sсhedule(self, schedule_id: int, data: ScheduleUpdate) -> ScheduleDetail:
+    def update_schedule(self, schedule_id: int, data: ScheduleUpdate) -> ScheduleDetail:
+        
         schedule = self.schedule_repo.get_schedule_by_id(schedule_id)
         if schedule is None:
             raise ValueError(f"Расписание с id={schedule_id} не найдено")
