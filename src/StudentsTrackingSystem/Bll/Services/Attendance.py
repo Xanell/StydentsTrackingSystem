@@ -1,14 +1,34 @@
 from sqlalchemy.orm import Session
-from Bll.Schemas.Attendance import (
-    AttendanceCreate,
-    AttendanceDetail,
-    AttendanceUpdate,
-)
+from Bll.Schemas.Attendance import AttendanceCreate, AttendanceDetail, AttendanceUpdate
 from Dal.Repositories.Attendance import AttendanceRepository
+from Dal.Repositories.Lessons import LessonsRepository
+from Dal.Repositories.User import UserRepository
 
 class AttendanceService:
     def __init__(self, session: Session):
         self.attendance_repo = AttendanceRepository(session)
+        self.lesson_repo = LessonsRepository(session)
+        self.user_repo = UserRepository(session)
+
+    def create_attendance(self, data: AttendanceCreate) -> AttendanceDetail:
+
+        if self.lesson_repo.get_by_id(data.lesson_id) is None:
+            raise ValueError(f"Урок #{data.lesson_id} не найден")
+
+        if self.user_repo.get_by_id(data.student_id) is None:
+            raise ValueError(f"Ученик #{data.student_id} не найден")
+
+        existing = self.attendance_repo.get_by_lesson_and_student(data.lesson_id, data.student_id)
+        if existing is not None:
+            raise ValueError(f"Ученик #{data.student_id} уже отмечен на уроке #{data.lesson_id}")
+
+        new_attendance = self.attendance_repo.create_attendance(
+            lesson_id=data.lesson_id,
+            student_id=data.student_id,
+            is_present=data.is_present,
+            reason=data.reason,
+        )
+        return AttendanceDetail.model_validate(new_attendance)
 
     def get_by_id(self, attendance_id: int) -> AttendanceDetail:
         attendance = self.attendance_repo.get_by_id(attendance_id)
@@ -30,14 +50,6 @@ class AttendanceService:
             result.append(AttendanceDetail.model_validate(attendance))
         return result
 
-    def create_attendance(self, data: AttendanceCreate) -> AttendanceDetail:
-        new_attendance = self.attendance_repo.create_attendance(
-            lesson_id=data.lesson_id,
-            student_id=data.student_id,
-            is_present=data.is_present,
-            reason=data.reason,
-        )
-        return AttendanceDetail.model_validate(new_attendance)
 
     def update_attendance(self, attendance_id: int, data: AttendanceUpdate) -> AttendanceDetail:
         attendance = self.attendance_repo.get_by_id(attendance_id)
