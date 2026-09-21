@@ -1,9 +1,5 @@
 from sqlalchemy.orm import Session
-from Bll.Schemas.LessonResults import (
-    LessonResultCreate,
-    LessonResultDetail,
-    LessonResultUpdate,
-)
+from Bll.Schemas.LessonsResults import LessonResultCreate, LessonResultDetail, LessonResultUpdate
 from Dal.Repositories.LessonsResults import LessonsResultsRepository
 from datetime import datetime
 

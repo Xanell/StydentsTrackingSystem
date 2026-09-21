@@ -1,14 +1,14 @@
 from sqlalchemy.orm import Session
-from Bll.Schemas.Lessons import LessonDetail,LessonCreate,LessonUpdate
-from Dal.Repositories.Lessons import LessonsRepositories
+from Bll.Schemas.Lessons import LessonDetail, LessonCreate, LessonUpdate
+from Dal.Repositories.Lessons import LessonsRepository
 from datetime import date
 
 class LessonService:
     def __init__(self, session: Session):
-        self.lesson_repo = LessonsRepositories(session)
+        self.lesson_repo = LessonsRepository(session)
 
     def get_by_id(self, lesson_id) -> LessonDetail:
-        Lesson = self.Lesson_repo.get_by_id(lesson_id)
+        Lesson = self.lesson_repo.get_by_id(lesson_id)
         if Lesson is None:
             raise ValueError("Ошибка урок не найден")
         return LessonDetail.model_validate(Lesson)

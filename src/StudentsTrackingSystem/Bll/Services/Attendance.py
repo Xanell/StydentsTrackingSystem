@@ -3,6 +3,7 @@ from Bll.Schemas.Attendance import AttendanceCreate, AttendanceDetail, Attendanc
 from Dal.Repositories.Attendance import AttendanceRepository
 from Dal.Repositories.Lessons import LessonsRepository
 from Dal.Repositories.User import UserRepository
+from Core.Enums import RoleName
 
 class AttendanceService:
     def __init__(self, session: Session):
@@ -15,8 +16,11 @@ class AttendanceService:
         if self.lesson_repo.get_by_id(data.lesson_id) is None:
             raise ValueError(f"Урок #{data.lesson_id} не найден")
 
-        if self.user_repo.get_by_id(data.student_id) is None:
-            raise ValueError(f"Ученик #{data.student_id} не найден")
+        student = self.user_repo.get_by_id(data.student_id)
+        if student is None:
+            raise ValueError(f"Пользователь #{data.student_id} не найден")
+        if student.role.name != RoleName.USER:
+            raise ValueError(f"Пользователь #{data.student_id} не является учеником")
 
         existing = self.attendance_repo.get_by_lesson_and_student(data.lesson_id, data.student_id)
         if existing is not None:
@@ -55,14 +59,11 @@ class AttendanceService:
         attendance = self.attendance_repo.get_by_id(attendance_id)
         if attendance is None:
             raise ValueError("Ошибка: посещение не найдено!")
+        new_is_present = data.is_present if data.is_present is not None else attendance.is_present
+        new_reason = data.reason if data.reason is not None else attendance.reason
         updated = self.attendance_repo.update_attendance(
             attendance_id,
-            is_present=data.is_present,
-            reason=data.reason,
+            is_present=new_is_present,
+            reason=new_reason,
         )
         return AttendanceDetail.model_validate(updated)
-
-    def delete_attendance(self, attendance_id: int) -> None:
-        deleted = self.attendance_repo.delete_attendance(attendance_id)
-        if not deleted:
-            raise ValueError("Ошибка: посещение не найдено!")
