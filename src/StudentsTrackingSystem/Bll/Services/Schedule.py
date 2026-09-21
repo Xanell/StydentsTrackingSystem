@@ -116,7 +116,6 @@ class ScheduleService:
                 raise ValueError(f"Пользователь с id={new_teacher_id} не найден")
             if teacher.role.name != RoleName.TEACHER:
                 raise ValueError(f"Пользователь с id={new_teacher_id} не является учителем")
-
         if new_day_of_week != schedule.day_of_week:
             existing = self.schedule_repo.get_by_class_day_period(
                 schedule.class_id,

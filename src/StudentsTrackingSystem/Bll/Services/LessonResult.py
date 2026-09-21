@@ -1,11 +1,16 @@
 from sqlalchemy.orm import Session
 from Bll.Schemas.LessonsResults import LessonResultCreate, LessonResultDetail, LessonResultUpdate
 from Dal.Repositories.LessonsResults import LessonsResultsRepository
+from Dal.Repositories.User import UserRepository
+from Dal.Repositories.Lessons import LessonsRepository
+from Core.Enums import RoleName
 from datetime import datetime
 
 class LessonsResultsService:
     def __init__(self, session: Session):
         self.result_repo = LessonsResultsRepository(session)
+        self.lesson_repo = LessonsRepository(session)
+        self.user_repo = UserRepository(session)
 
     def get_by_id(self, result_id: int) -> LessonResultDetail:
         result = self.result_repo.get_by_id(result_id)
@@ -35,6 +40,22 @@ class LessonsResultsService:
         return result
 
     def create_result(self, data: LessonResultCreate) -> LessonResultDetail:
+
+        if self.lesson_repo.get_by_id(data.lesson_id) is None:
+            raise ValueError(f"Урок #{data.lesson_id} не найден")
+        
+        student = self.user_repo.get_by_id(data.student_id)
+        if student is None:
+            raise ValueError(f"Пользователь #{data.student_id} не найден")
+        if student.role.name != RoleName.USER:
+            raise ValueError(f"Пользователь #{data.student_id} не является учеником")
+
+        existing = self.result_repo.get_by_lesson_and_student(data.lesson_id, data.student_id)
+        if existing is not None:
+            raise ValueError(
+                f"У ученика #{data.student_id} уже есть результат за урок #{data.lesson_id}"
+            )
+        
         if data.grade is None:
             raise ValueError("Ошибка: оценка обязательна!")
 
@@ -52,10 +73,15 @@ class LessonsResultsService:
         result = self.result_repo.get_by_id(result_id)
         if result is None:
             raise ValueError("Ошибка: результат урока не найден!")
+        
+        new_file = data.file if data.file is not None else result.file
+        new_grade = data.grade if data.grade is not None else result.grade
+        new_grade_type = data.grade_type if data.grade_type is not None else result.grade_type
+        
         updated = self.result_repo.update_lesson_result(
             result_id,
-            grade=data.grade,
-            grade_type=data.grade_type,
-            submitted_at=datetime.now(),
+            file=new_file,
+            grade=new_grade,
+            grade_type=new_grade_type,
         )
         return LessonResultDetail.model_validate(updated)

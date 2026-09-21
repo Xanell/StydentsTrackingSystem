@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from ..DTOs.Lessons import Lessons
+from ..DTOs.Lessons import Lesson
 from datetime import date
 
 class LessonsRepository:
@@ -10,7 +10,7 @@ class LessonsRepository:
 
     # Создаёт новый урок и сохраняет в БД
     def create_lesson(self, lesson_date: date, topic: str, homework_description: str | None, homework_due_date: date | None, files: str | None, schedule_id: int) -> Lessons:
-        lesson = Lessons(
+        lesson = Lesson(
             lesson_date=lesson_date,
             topic=topic,
             homework_description=homework_description,
@@ -24,31 +24,29 @@ class LessonsRepository:
         return lesson
 
     # Ищет урок по id
-    def get_by_id(self, lesson_id: int) -> Lessons | None:
-        return self.db.get(Lessons, lesson_id)
+    def get_by_id(self, lesson_id: int) -> Lesson | None:
+        return self.db.get(Lesson, lesson_id)
 
     # Возвращает все уроки, отсортированные по дате (сначала новые)
-    def get_all(self) -> list[Lessons]:
-        stmt = select(Lessons).order_by(Lessons.lesson_date.desc())
+    def get_all(self) -> list[Lesson]:
+        stmt = select(Lesson).order_by(Lesson.lesson_date.desc())
         return self.db.scalars(stmt).all()
 
     # Возвращает все уроки на конкретную дату
-    def get_by_date(self, lesson_date: date) -> list[Lessons]:
-        stmt = select(Lessons).where(Lessons.lesson_date == lesson_date)
+    def get_by_date(self, lesson_date: date) -> list[Lesson]:
+        stmt = select(Lesson).where(Lesson.lesson_date == lesson_date)
         return self.db.scalars(stmt).all()
 
     # Возвращает все уроки по конкретному расписанию (schedule_id)
-    def get_by_schedule(self, schedule_id: int) -> list[Lessons]:
-        stmt = select(Lessons).where(Lessons.schedule_id == schedule_id)
+    def get_by_schedule(self, schedule_id: int) -> list[Lesson]:
+        stmt = select(Lesson).where(Lesson.schedule_id == schedule_id)
         return self.db.scalars(stmt).all()
 
-    # Обновляет данные урока
-    def update_lesson(self, lesson_id: int, lesson_date: date | None = None, topic: str | None = None, homework_description: str | None = None, homework_due_date: date | None = None, files: str | None = None) -> Lessons | None:
+    # Возможно стоит добавить в будущем lesson_date: date | None = None
+    def update_lesson(self, lesson_id: int, topic: str | None = None, homework_description: str | None = None, homework_due_date: date | None = None, files: str | None = None) -> Lesson | None:
         lesson = self.get_by_id(lesson_id)
         if lesson is None:
             return None
-        if lesson_date is not None:
-            lesson.lesson_date = lesson_date
         if topic is not None:
             lesson.topic = topic
         if homework_description is not None:
@@ -60,12 +58,3 @@ class LessonsRepository:
         self.db.commit()
         self.db.refresh(lesson)
         return lesson
-
-    # Удаляет урок по id
-    def delete(self, lesson_id: int) -> bool:
-        lesson = self.get_by_id(lesson_id)
-        if lesson is None:
-            return False
-        self.db.delete(lesson)
-        self.db.commit()
-        return True
