@@ -6,8 +6,8 @@ from datetime import date
 class SchoolQuarter(Base):
     __tablename__ = "Quarters"
     __table_args__ = (
-        UniqueConstraint("school_year_id", "number", name="uq_quarter_year_number"),
-        CheckConstraint("end_date > start_date", name="ck_quarter_dates"),
+        UniqueConstraint("school_year_id", "number"),
+        CheckConstraint("end_date > start_date"),
     )
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     school_year_id: Mapped[int] = mapped_column(ForeignKey("SchoolYear.id"))
