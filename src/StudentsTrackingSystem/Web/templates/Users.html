@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Пользователи</h1>
+    <a href="#" class="btn-primary">+ Создать пользователя</a>
+</div>
+
+<table class="users-table">
+    <thead>
+        <tr>
+            <th>Логин</th>
+            <th>ФИО</th>
+            <th>Роль</th>
+            <th>Класс</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.username }}</td>
+            <td>{{ user.last_name }} {{ user.first_name }} {{ user.middle_name }}</td>
+            <td>{{ user.role.name }}</td>
+            <td>
+                {% if user.school_class %}
+                    {{ user.school_class.number }}{{ user.school_class.letter }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>
+                <a href="#" class="btn-action btn-edit">Редактировать</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr class="empty-row">
+            <td colspan="5">Пользователей пока нет</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

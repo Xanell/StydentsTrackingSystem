@@ -1,0 +1,10 @@
+{% extends "Base.html" %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<h1>Главная</h1>
+<p>Добро пожаловать, {{ user.first_name }}!</p>
+<p>Твой логин: {{ user.username }}</p>
+<p>Твоя роль: {{ user.role.name }}</p>
+{% endblock %}

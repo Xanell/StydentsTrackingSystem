@@ -143,3 +143,188 @@ body {
     color: #0c5460;
     border: 1px solid #bee5eb;
 }
+
+/* ========== LOGIN PAGE ========== */
+.page-auth .app-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+        "header"
+        "main";
+    min-height: 100vh;
+}
+
+.page-auth .app-sidebar {
+    display: none;
+}
+
+.page-auth .app-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    background: #f5f5f5;
+}
+
+.login-card {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-card h1 {
+    margin-bottom: 24px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.login-card label {
+    display: block;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #555;
+}
+
+.login-card input {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    margin-top: 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 15px;
+}
+
+.login-card input:focus {
+    outline: none;
+    border-color: #1abc9c;
+}
+
+.login-card button {
+    width: 100%;
+    padding: 12px;
+    background: #1abc9c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+
+.login-card button:hover {
+    background: #16a085;
+}
+
+/* ========== TABLE ========== */
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.users-table thead {
+    background: #f8f9fa;
+}
+
+.users-table th {
+    text-align: left;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.users-table td {
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.users-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.users-table tbody tr:hover {
+    background: #f8f9fa;
+    transition: background 0.15s;
+}
+
+/* Пустой список */
+.users-table .empty-row td {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-style: italic;
+}
+
+/* ========== КНОПКИ ДЕЙСТВИЙ ========== */
+.btn-action {
+    display: inline-block;
+    padding: 6px 14px;
+    font-size: 13px;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background 0.2s;
+    border: 1px solid transparent;
+}
+
+.btn-edit {
+    background: #e7f3ff;
+    color: #0066cc;
+    border-color: #cce0ff;
+}
+
+.btn-edit:hover {
+    background: #d0e7ff;
+}
+
+.btn-reset {
+    background: #fff3e0;
+    color: #cc7a00;
+    border-color: #ffd9a0;
+}
+
+.btn-reset:hover {
+    background: #ffe7cc;
+}
+
+/* ========== ЗАГОЛОВОК + КНОПКА СОЗДАНИЯ ========== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    color: #2c3e50;
+}
+
+.btn-primary {
+    padding: 10px 20px;
+    background: #1abc9c;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #16a085;
+}
