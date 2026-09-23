@@ -53,11 +53,11 @@ class UserService:
             raise ValueError(f"Пользователь с id={user_id} не найден")
         return UserDetail.model_validate(user)
 
-    def get_all(self) -> list[UserShort]:
+    def get_all(self) -> list[UserDetail]:
         users = self.user_repo.get_all()
         result = []
         for user in users:
-            result.append(UserShort.model_validate(user))
+            result.append(UserDetail.model_validate(user))
         return result
 
     def get_by_role(self, role_name: str) -> list[UserShort]:
@@ -119,3 +119,14 @@ class UserService:
             class_id=new_class_id,
         )
         return UserDetail.model_validate(update)
+
+    def authenticate(self, username: str, password: str) -> UserDetail | None:
+        user = self.user_repo.get_by_username(username)
+        if user is None:
+            return None
+
+        if user.password != password:
+            return None
+
+        return UserDetail.model_validate(user)
+        

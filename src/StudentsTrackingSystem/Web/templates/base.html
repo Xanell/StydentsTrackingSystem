@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Школьный трекер{% endblock %}</title>
+    <title>Школята</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <div class="app-layout">
 
         <!-- HEADER -->
@@ -38,7 +38,7 @@
                 <a href="#" class="menu-item">⏰ Периоды уроков</a>
                 <a href="#" class="menu-item">📖 Расписание</a>
                 <a href="#" class="menu-item">📝 Уроки</a>
-                <a href="#" class="menu-item">👥 Пользователи</a>
+                <a href="{% url 'users' %}" class="menu-item">👥 Пользователи</a>
             </nav>
         </aside>
         {% endif %}
