@@ -7,7 +7,7 @@ class SchoolYear(Base):
     __tablename__ = "SchoolYear"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(20), unique=True)
+    name: Mapped[str] = mapped_column(String(30), unique=True)
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date] = mapped_column(Date)
     is_current: Mapped[bool] = mapped_column(Boolean, default=False)
