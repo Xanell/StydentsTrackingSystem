@@ -19,3 +19,5 @@ urlpatterns = [
     path("school-years/<int:year_id>/classes/<int:class_id>/edit/", school_class_edit, name="school_class_edit"),
     path("classes/", classes_root, name="classes_root")
 ]
+print("users_view =", users_view)
+print("type =", type(users_view))

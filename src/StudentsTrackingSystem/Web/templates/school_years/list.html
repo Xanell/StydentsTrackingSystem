@@ -7,7 +7,7 @@
 </div>
 
 {% if years %}
-<table class="table">
+<table class="data-table">
     <thead>
         <tr>
             <th>Название</th>
@@ -34,12 +34,12 @@
         <form method="post" action="{% url 'school_year_make_current' year.id %}"
               style="display:inline">
             {% csrf_token %}
-            <button type="submit" class="btn btn-sm">Сделать текущим</button>
+            <button type="submit" class="btn-action btn-current">Сделать текущим</button>
         </form>
         {% endif %}
         </td>
             <td>
-                <a href="{% url 'school_year_edit' year.id %}" class="btn btn-primary">Изменить</a>
+                <a href="{% url 'school_year_edit' year.id %}" class="btn-action btn-edit">Изменить</a>
             </td>
         </tr>
         {% endfor %}

@@ -5,6 +5,7 @@ from Dal.Repositories.User import UserRepository
 from Dal.Repositories.Lessons import LessonsRepository
 from Core.Enums import RoleName
 from datetime import datetime
+from Core.Exceptions import NotFoundError, ConflictError, BusinessValidationError
 
 class LessonsResultsService:
     def __init__(self, session: Session):
@@ -15,7 +16,7 @@ class LessonsResultsService:
     def get_by_id(self, result_id: int) -> LessonResultDetail:
         result = self.result_repo.get_by_id(result_id)
         if result is None:
-            raise ValueError("Ошибка: результат урока не найден!")
+            raise NotFoundError("Ошибка: результат урока не найден!")
         return LessonResultDetail.model_validate(result)
 
     def get_all_results(self) -> list[LessonResultDetail]:
@@ -27,6 +28,8 @@ class LessonsResultsService:
 
     def get_by_lesson(self, lesson_id: int) -> list[LessonResultDetail]:
         results = self.result_repo.get_by_lesson(lesson_id)
+        if result is None:
+            raise NotFoundError("Ошибка: урок не найден")
         result = []
         for item in results:
             result.append(LessonResultDetail.model_validate(item))
@@ -34,6 +37,8 @@ class LessonsResultsService:
 
     def get_by_student(self, student_id: int) -> list[LessonResultDetail]:
         results = self.result_repo.get_by_student(student_id)
+        if result is None:
+            raise NotFoundError("Ошибка: студент не найден!")
         result = []
         for item in results:
             result.append(LessonResultDetail.model_validate(item))
@@ -42,22 +47,22 @@ class LessonsResultsService:
     def create_result(self, data: LessonResultCreate) -> LessonResultDetail:
 
         if self.lesson_repo.get_by_id(data.lesson_id) is None:
-            raise ValueError(f"Урок #{data.lesson_id} не найден")
+            raise NotFoundError(f"Урок #{data.lesson_id} не найден")
         
         student = self.user_repo.get_by_id(data.student_id)
         if student is None:
-            raise ValueError(f"Пользователь #{data.student_id} не найден")
+            raise NotFoundError(f"Пользователь #{data.student_id} не найден")
         if student.role.name != RoleName.USER:
-            raise ValueError(f"Пользователь #{data.student_id} не является учеником")
+            raise BusinessValidationError(f"Пользователь #{data.student_id} не является учеником")
 
         existing = self.result_repo.get_by_lesson_and_student(data.lesson_id, data.student_id)
         if existing is not None:
-            raise ValueError(
+            raise ConflictError(
                 f"У ученика #{data.student_id} уже есть результат за урок #{data.lesson_id}"
             )
         
         if data.grade is None:
-            raise ValueError("Ошибка: оценка обязательна!")
+            raise BusinessValidationError("Ошибка: оценка обязательна!")
 
         new_result = self.result_repo.create_result(
             lesson_id=data.lesson_id,
@@ -72,7 +77,7 @@ class LessonsResultsService:
     def update_result(self, result_id: int, data: LessonResultUpdate) -> LessonResultDetail:
         result = self.result_repo.get_by_id(result_id)
         if result is None:
-            raise ValueError("Ошибка: результат урока не найден!")
+            raise NotFoundError("Ошибка: результат урока не найден!")
         
         new_file = data.file if data.file is not None else result.file
         new_grade = data.grade if data.grade is not None else result.grade

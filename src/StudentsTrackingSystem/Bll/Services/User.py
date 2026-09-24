@@ -4,6 +4,7 @@ from Dal.Repositories.User import UserRepository
 from Dal.Repositories.UserRole import UserRoleRepository
 from Dal.Repositories.SchoolClasses import SchoolClassesRepository
 from Core.Enums import RoleName
+from Core.Exceptions import NotFoundError, ConflictError, BusinessValidationError
 
 class UserService:
     def __init__(self, session: Session):
@@ -24,13 +25,13 @@ class UserService:
     def create_user(self, data: UserCreate) -> UserCreatedResponse:
         role = self.user_role_repo.get_by_id(data.role_id)
         if role is None:
-            raise ValueError("Ошибка роль не найдена!")
+            raise NotFoundError(f"Роль с id={data.role_id} не найдена")
 
         if data.class_id is not None:
             if self.school_class_repo.get_class_by_id(data.class_id) is None:
-                raise ValueError("Ошибка такого класса нет!")
+                raise NotFoundError(f"Класс с id={data.class_id} не найден")
             if role.name != RoleName.USER:
-                raise ValueError("Только ученик может быть привязан к классу")
+                raise BusinessValidationError("Только ученик может быть привязан к классу")
 
         username = self._generate_username(data.first_name, data.middle_name, data.last_name)
         # добавить генерацию пароля + хеш
@@ -50,7 +51,7 @@ class UserService:
     def get_by_id(self, user_id: int) -> UserDetail:
         user = self.user_repo.get_by_id(user_id)
         if user is None:
-            raise ValueError(f"Пользователь с id={user_id} не найден")
+            raise NotFoundError(f"Пользователь с id={user_id} не найден")
         return UserDetail.model_validate(user)
 
     def get_all(self) -> list[UserDetail]:
@@ -63,7 +64,7 @@ class UserService:
     def get_by_role(self, role_name: str) -> list[UserShort]:
         role = self.user_role_repo.get_by_name(role_name)
         if role is None:
-            raise ValueError(f"Роль '{role_name}' не найдена")
+            raise NotFoundError(f"Роль '{role_name}' не найдена")
 
         users = self.user_repo.get_by_role(role_name)
         result = []
@@ -74,7 +75,7 @@ class UserService:
     def reset_password(self, user_id: int) -> UserPasswordResetResponse:
         user = self.user_repo.get_by_id(user_id)
         if user is None:
-            raise ValueError(f"Пользователь с id={user_id} не найден")
+            raise NotFoundError(f"Пользователь с id={user_id} не найден")
 
         # заменить на генерацию пароля
         new_password = "new_password"
@@ -89,7 +90,7 @@ class UserService:
     def update_user(self, user_id: int, data: UserUpdate) -> UserDetail:
         user = self.user_repo.get_by_id(user_id)
         if user is None:
-            raise ValueError("Ошибка пользователь не существует!")
+            raise NotFoundError(f"Пользователь с id={user_id} не найден")
 
         new_first_name = data.first_name or user.first_name
         new_middle_name = data.middle_name or user.middle_name
@@ -99,16 +100,16 @@ class UserService:
 
         role = self.user_role_repo.get_by_id(new_role_id)
         if role is None:
-            raise ValueError(f"Роль с id={new_role_id} не найдена")
+            raise NotFoundError(f"Роль с id={new_role_id} не найдена")
 
         if new_role_id != user.role_id and role.name != RoleName.USER:
             new_class_id = None
 
         if new_class_id is not None:
             if role.name != RoleName.USER:
-                raise ValueError("Только ученик может быть привязан к классу")
+                raise BusinessValidationError("Только ученик может быть привязан к классу")
             if self.school_class_repo.get_class_by_id(new_class_id) is None:
-                raise ValueError(f"Класс с id={new_class_id} не найден")
+                raise NotFoundError(f"Класс с id={new_class_id} не найден")
 
         update = self.user_repo.update_user(
             user_id,

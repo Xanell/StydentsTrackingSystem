@@ -1,16 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import Http404
-
+from Web.Decorators import login_required
 from Dal.database import get_session
 from Bll.Services.SchoolYear import SchoolYearService
 from Bll.Schemas.SchoolYear import SchoolYearCreate, SchoolYearUpdate
 
-
+@login_required
 def school_years_list(request):
-    if not request.session.get("user_id"):
-        return redirect("login")
-
     with get_session() as db:
         service = SchoolYearService(db)
         years = service.get_all()
@@ -21,18 +18,14 @@ def school_years_list(request):
         "current_year": current,
     })
 
-
+@login_required
 def school_year_create(request):
-    if not request.session.get("user_id"):
-        return redirect("login")
-
     with get_session() as db:
         service = SchoolYearService(db)
 
         if request.method == "POST":
             try:
                 data = SchoolYearCreate(
-                    name=request.POST["name"],
                     start_date=request.POST["start_date"],
                     end_date=request.POST["end_date"],
                 )
@@ -41,18 +34,13 @@ def school_year_create(request):
                 return redirect("school_years")
             except ValueError as e:
                 messages.error(request, str(e))
-            except Exception as e:
-                messages.error(request, f"Ошибка: {e}")
 
         return render(request, "school_years/form.html", {
             "action": "create",
             "year": None,
         })
-
+@login_required
 def school_year_edit(request, year_id: int):
-    if not request.session.get("user_id"):
-        return redirect("login")
-
     with get_session() as db:
         service = SchoolYearService(db)
 
@@ -77,11 +65,9 @@ def school_year_edit(request, year_id: int):
             "action": "edit",
             "year": year,
         })
-
+    
+@login_required
 def school_year_make_current(request, year_id: int):
-    if not request.session.get("user_id"):
-        return redirect("login")
-
     if request.method != "POST":
         raise Http404()
 

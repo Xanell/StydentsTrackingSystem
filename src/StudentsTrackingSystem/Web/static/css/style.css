@@ -220,7 +220,7 @@ body {
 }
 
 /* ========== TABLE ========== */
-.users-table {
+.data-table {
     width: 100%;
     border-collapse: collapse;
     background: white;
@@ -229,11 +229,11 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.users-table thead {
+.data-table thead {
     background: #f8f9fa;
 }
 
-.users-table th {
+.data-table th {
     text-align: left;
     padding: 14px 18px;
     font-size: 13px;
@@ -244,7 +244,7 @@ body {
     border-bottom: 2px solid #e9ecef;
 }
 
-.users-table td {
+.data-table td {
     padding: 14px 18px;
     font-size: 14px;
     color: #333;
@@ -252,17 +252,17 @@ body {
     vertical-align: middle;
 }
 
-.users-table tbody tr:last-child td {
+.data-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-.users-table tbody tr:hover {
+.data-table tbody tr:hover {
     background: #f8f9fa;
     transition: background 0.15s;
 }
 
 /* Пустой список */
-.users-table .empty-row td {
+.data-table .empty-row td {
     text-align: center;
     padding: 40px;
     color: #999;
@@ -327,4 +327,13 @@ body {
 
 .btn-primary:hover {
     background: #16a085;
+}
+
+.btn-current {
+    background: #fff3e0;
+    color: #cc7a00;
+    border-color: #ffd9a0;
+}
+.btn-current:hover {
+    background: #ffe7cc;
 }

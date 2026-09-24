@@ -4,6 +4,7 @@ from Dal.Repositories.SchoolCalendar import SchoolCalendarRepository
 from Dal.Repositories.SchoolYear import SchoolYearRepository
 from datetime import timedelta, date
 from Core.Enums import DayType
+from Core.Exceptions import NotFoundError, ConflictError
 
 class SchoolCalendarService:
     def __init__(self, session: Session):
@@ -13,10 +14,10 @@ class SchoolCalendarService:
     def generate_calendar(self, year_id: int) -> list[SchoolCalendarDetail]:
         curr_year = self.school_year_repo.get_by_id(year_id)
         if curr_year is None:
-            raise ValueError("Ошибка!!")
+            raise NotFoundError(f"Год с id={year_id} не найден")
         existing = self.school_calendar_repo.get_by_year(year_id)
         if existing:
-            raise ValueError("Ошибка календарь уже есть!")
+            raise ConflictError(f"Календарь для года {year_id} уже создан")
 
         days_data = []
         curr_day = curr_year.start_date
@@ -59,16 +60,16 @@ class SchoolCalendarService:
             day_type=data.day_type,
         )
         if updated is None:
-            raise ValueError(f"Запись календаря с id={entry_id} не найдена")
+            raise NotFoundError(f"Запись календаря с id={entry_id} не найдена")
         return SchoolCalendarDetail.model_validate(updated)
 
     def delete_calendar(self, year_id: int) -> None:
         year = self.school_year_repo.get_by_id(year_id)
         if year is None:
-            raise ValueError(f"Год с id={year_id} не найден")
+            raise NotFoundError(f"Год с id={year_id} не найден")
 
         existing = self.school_calendar_repo.get_by_year(year_id)
         if not existing:
-            raise ValueError(f"Календарь для года {year_id} ещё не создан")
+            raise ConflictError(f"Календарь для года {year_id} ещё не создан")
 
         self.school_calendar_repo.delete_by_year(year_id)

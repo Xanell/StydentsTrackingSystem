@@ -1,23 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import Http404
-
+from Web.Decorators import login_required
 from Dal.database import get_session
 from Bll.Services.SchoolClasses import SchoolClassService
 from Bll.Services.SchoolYear import SchoolYearService
 from Bll.Schemas.SchoolClasses import SchoolClassCreate, SchoolClassUpdate
+from Core.Exceptions import BllError, NotFoundError
 
-
-def _require_login(request):
-    if not request.session.get("user_id"):
-        return redirect("login")
-    return None
-
+@login_required
 def classes_root(request):
-    r = _require_login(request)
-    if r:
-        return r
-
     with get_session() as db:
         year_service = SchoolYearService(db)
         current = year_service.get_current()
@@ -28,10 +20,8 @@ def classes_root(request):
 
     return redirect("school_classes", year_id=current.id)
 
+login_required
 def school_classes_list(request, year_id: int):
-    redirect_response = _require_login(request)
-    if redirect_response:
-        return redirect_response
 
     with get_session() as db:
         year_service = SchoolYearService(db)
@@ -39,7 +29,7 @@ def school_classes_list(request, year_id: int):
 
         try:
             year = year_service.get_by_id(year_id)
-        except ValueError:
+        except NotFoundError:
             raise Http404("Учебный год не найден")
 
         classes = class_service.get_all_classes(year_id)
@@ -50,19 +40,15 @@ def school_classes_list(request, year_id: int):
         "classes": classes,
     })
 
-
+@login_required
 def school_class_create(request, year_id: int):
-    redirect_response = _require_login(request)
-    if redirect_response:
-        return redirect_response
-
     with get_session() as db:
         year_service = SchoolYearService(db)
         class_service = SchoolClassService(db)
 
         try:
             year = year_service.get_by_id(year_id)
-        except ValueError:
+        except NotFoundError:
             raise Http404("Учебный год не найден")
 
         if request.method == "POST":
@@ -78,10 +64,8 @@ def school_class_create(request, year_id: int):
                     f"Класс {new_class.number}{new_class.letter} создан"
                 )
                 return redirect("school_classes", year_id=year_id)
-            except ValueError as e:
+            except BllError as e:
                 messages.error(request, str(e))
-            except Exception as e:
-                messages.error(request, f"Ошибка: {e}")
 
         return render(request, "school_classes/form.html", {
             "action": "create",
@@ -90,18 +74,14 @@ def school_class_create(request, year_id: int):
             "school_class": None,
         })
 
-
+@login_required
 def school_class_edit(request, year_id: int, class_id: int):
-    redirect_response = _require_login(request)
-    if redirect_response:
-        return redirect_response
-
     with get_session() as db:
         class_service = SchoolClassService(db)
 
         try:
             school_class = class_service.get_by_id(class_id)
-        except ValueError:
+        except NotFoundError:
             raise Http404("Класс не найден")
 
         if request.method == "POST":
@@ -115,9 +95,8 @@ def school_class_edit(request, year_id: int, class_id: int):
                     request,
                     f"Класс {updated.number}{updated.letter} обновлён"
                 )
-                return redirect("school_classes", year_id=school_class.school_year_id
-                                if hasattr(school_class, "school_year_id") else 0)
-            except ValueError as e:
+                return redirect("school_classes", year_id=year_id)
+            except BllError as e:
                 messages.error(request, str(e))
 
         return render(request, "school_classes/form.html", {

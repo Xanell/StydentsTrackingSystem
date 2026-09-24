@@ -39,11 +39,7 @@ class LessonsPeriodsRepository:     # Репозиторий для работы
         self.db.commit()
         self.db.refresh(period)
         return period
-    
-    def delete_period(self, period_id: int) -> bool:
-        period = self.get_by_id(period_id)
-        if period is None:
-            return False
-        self.db.delete(period)
-        self.db.commit()
-        return True
+
+    def get_by_start_time(self, start_time: time) -> LessonPeriod | None:
+        stmt = select(LessonPeriod).where(LessonPeriod.start_time == start_time)
+        return self.db.scalars(stmt).one_or_none()

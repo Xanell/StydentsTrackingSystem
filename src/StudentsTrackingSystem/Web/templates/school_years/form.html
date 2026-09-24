@@ -12,13 +12,6 @@
     {% csrf_token %}
 
     <div class="form-group">
-    <label for="name">Название</label>
-    <input type="text" id="name" name="name" required
-           value="{{ year.name|default:'' }}"
-           placeholder="Например: 2026/2027">
-    </div>
-
-    <div class="form-group">
         <label for="start_date">Дата начала</label>
         <input type="date" id="start_date" name="start_date" required
                value="{{ year.start_date|date:'Y-m-d'|default:'' }}">

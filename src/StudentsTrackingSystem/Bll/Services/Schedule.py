@@ -6,6 +6,7 @@ from Dal.Repositories.Subjects import SubjectsRepository
 from Dal.Repositories.LessonsPeriods import LessonsPeriodsRepository
 from Dal.Repositories.User import UserRepository
 from Core.Enums import RoleName
+from Core.Exceptions import NotFoundError, ConflictError, BusinessValidationError
 
 class ScheduleService:
     def __init__(self, session: Session):
@@ -18,27 +19,27 @@ class ScheduleService:
     def create_schedule(self, data: ScheduleCreate) -> ScheduleDetail:
 
         if self.school_class_repo.get_class_by_id(data.class_id) is None:
-            raise ValueError("Ошибка: класс не найден!")
+            raise NotFoundError("Ошибка: класс не найден!")
 
         if self.subject_repo.get_by_id(data.subject_id) is None:
-            raise ValueError("Ошибка: предмет не найден!")
+            raise NotFoundError("Ошибка: предмет не найден!")
 
         teacher = self.user_repo.get_by_id(data.teacher_id)
         if teacher is None:
-            raise ValueError(f"Пользователь с id={data.teacher_id} не найден")
+            raise NotFoundError(f"Пользователь с id={data.teacher_id} не найден")
         if teacher.role.name != RoleName.TEACHER:
-            raise ValueError(f"Пользователь с id={data.teacher_id} не является учителем")
+            raise ConflictError(f"Пользователь с id={data.teacher_id} не является учителем")
 
         if self.period_repo.get_by_id(data.period_id) is None:
-            raise ValueError("Ошибка: период не найден!")
+            raise NotFoundError("Ошибка: период не найден!")
 
         existing = self.schedule_repo.get_by_class_day_period(data.class_id, data.day_of_week, data.period_id)
         if existing is not None:
-            raise ValueError(f"У класса уже есть урок в день {data.day_of_week}, период {data.period_id}")
+            raise BusinessValidationError(f"У класса уже есть урок в день {data.day_of_week}, период {data.period_id}")
 
         room = data.room.strip()
         if not room:
-            raise ValueError("Ошибка: кабинет не может быть пустым!")
+            raise BusinessValidationError("Ошибка: кабинет не может быть пустым!")
 
         new_schedule = self.schedule_repo.create_schedule(
             class_id=data.class_id,
@@ -56,7 +57,7 @@ class ScheduleService:
         schedule = self.schedule_repo.get_schedule_by_id(schedule_id)
 
         if schedule is None:
-            raise ValueError("Ошибка: расписание не найдено!")
+            raise NotFoundError("Ошибка: расписание не найдено!")
         return ScheduleDetail.model_validate(schedule)
 
     def get_all_schedule(self) -> list[ScheduleDetail]:
@@ -71,7 +72,7 @@ class ScheduleService:
     def get_by_class(self, class_id: int) -> list[ScheduleDetail]:
 
         if self.school_class_repo.get_class_by_id(class_id) is None:
-            raise ValueError(f"Класс с id={class_id} не найден")
+            raise NotFoundError(f"Класс с id={class_id} не найден")
 
         schedules = self.schedule_repo.get_schedule_by_class(class_id)
         result = []
@@ -83,9 +84,9 @@ class ScheduleService:
 
         teacher = self.user_repo.get_by_id(teacher_id)
         if teacher is None:
-            raise ValueError(f"Пользователь с id={teacher_id} не найден")
+            raise NotFoundError(f"Пользователь с id={teacher_id} не найден")
         if teacher.role.name != RoleName.TEACHER:
-            raise ValueError(f"Пользователь с id={teacher_id} не является учителем")
+            raise BusinessValidationError(f"Пользователь с id={teacher_id} не является учителем")
 
         schedules = self.schedule_repo.get_schedule_by_teacher(teacher_id)
         result = []
@@ -97,7 +98,7 @@ class ScheduleService:
         
         schedule = self.schedule_repo.get_schedule_by_id(schedule_id)
         if schedule is None:
-            raise ValueError(f"Расписание с id={schedule_id} не найдено")
+            raise NotFoundError(f"Расписание с id={schedule_id} не найдено")
 
         new_subject_id = data.subject_id or schedule.subject_id
         new_teacher_id = data.teacher_id or schedule.teacher_id
@@ -108,14 +109,14 @@ class ScheduleService:
 
         if new_subject_id != schedule.subject_id:
             if self.subject_repo.get_by_id(new_subject_id) is None:
-                raise ValueError(f"Предмет с id={new_subject_id} не найден")
+                raise NotFoundError(f"Предмет с id={new_subject_id} не найден")
 
         if new_teacher_id != schedule.teacher_id:
             teacher = self.user_repo.get_by_id(new_teacher_id)
             if teacher is None:
-                raise ValueError(f"Пользователь с id={new_teacher_id} не найден")
+                raise NotFoundError(f"Пользователь с id={new_teacher_id} не найден")
             if teacher.role.name != RoleName.TEACHER:
-                raise ValueError(f"Пользователь с id={new_teacher_id} не является учителем")
+                raise ConflictError(f"Пользователь с id={new_teacher_id} не является учителем")
         if new_day_of_week != schedule.day_of_week:
             existing = self.schedule_repo.get_by_class_day_period(
                 schedule.class_id,
@@ -123,7 +124,7 @@ class ScheduleService:
                 schedule.period_id,
             )
             if existing is not None and existing.id != schedule_id:
-                raise ValueError(
+                raise ConflictError(
                     f"В этот день (period {schedule.period_id}) у класса уже есть урок"
                 )
 

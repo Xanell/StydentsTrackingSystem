@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from Bll.Services.User import UserService
 from Dal.database import SessionLocal
+from Web.Decorators import login_required
 
 def home(request):
     user_id = request.session.get("user_id")

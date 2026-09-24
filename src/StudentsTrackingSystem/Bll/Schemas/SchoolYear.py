@@ -9,11 +9,9 @@ class SchoolYearDetail(BaseSchema):
     is_current: bool
 
 class SchoolYearCreate(BaseSchema):
-    name: str
     start_date: date
     end_date: date
 
 class SchoolYearUpdate(BaseSchema):
-    name: str | None = None
     start_date: date | None = None
     end_date: date | None = None
