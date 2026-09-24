@@ -69,3 +69,12 @@ class UserRepository:
                 .where(UserRole.name == role_name)
                 )
         return self.db.scalars(stmt).all()
+
+    def clear_class(self, user_id: int) -> Users | None:
+        user = self.get_by_id(user_id)
+        if user is None:
+            return None
+        user.class_id = None
+        self.db.commit()
+        self.db.refresh(user)
+        return user

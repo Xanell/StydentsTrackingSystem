@@ -52,7 +52,7 @@ class LessonsResultsService:
         student = self.user_repo.get_by_id(data.student_id)
         if student is None:
             raise NotFoundError(f"Пользователь #{data.student_id} не найден")
-        if student.role.name != RoleName.USER:
+        if student.role.name != RoleName.STUDENT:
             raise BusinessValidationError(f"Пользователь #{data.student_id} не является учеником")
 
         existing = self.result_repo.get_by_lesson_and_student(data.lesson_id, data.student_id)

@@ -4,7 +4,7 @@ from Dal.Repositories.User import UserRepository
 from Dal.Repositories.UserRole import UserRoleRepository
 from Dal.Repositories.SchoolClasses import SchoolClassesRepository
 from Core.Enums import RoleName
-from Core.Exceptions import NotFoundError, ConflictError, BusinessValidationError
+from Core.Exceptions import NotFoundError, BusinessValidationError
 
 class UserService:
     def __init__(self, session: Session):
@@ -30,7 +30,7 @@ class UserService:
         if data.class_id is not None:
             if self.school_class_repo.get_class_by_id(data.class_id) is None:
                 raise NotFoundError(f"Класс с id={data.class_id} не найден")
-            if role.name != RoleName.USER:
+            if role.name != RoleName.STUDENT:
                 raise BusinessValidationError("Только ученик может быть привязан к классу")
 
         username = self._generate_username(data.first_name, data.middle_name, data.last_name)
@@ -102,12 +102,13 @@ class UserService:
         if role is None:
             raise NotFoundError(f"Роль с id={new_role_id} не найдена")
 
-        if new_role_id != user.role_id and role.name != RoleName.USER:
-            new_class_id = None
-
         if new_class_id is not None:
-            if role.name != RoleName.USER:
-                raise BusinessValidationError("Только ученик может быть привязан к классу")
+            # Класс указан — проверить, что роль = ученик
+            if role.name != RoleName.STUDENT:
+                raise BusinessValidationError(
+                    "Только ученик может быть привязан к классу"
+                )
+            # Проверить, что класс существует
             if self.school_class_repo.get_class_by_id(new_class_id) is None:
                 raise NotFoundError(f"Класс с id={new_class_id} не найден")
 
@@ -130,4 +131,3 @@ class UserService:
             return None
 
         return UserDetail.model_validate(user)
-        

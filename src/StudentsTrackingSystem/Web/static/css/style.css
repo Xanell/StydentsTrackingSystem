@@ -1,3 +1,6 @@
+/* ============================================================
+   1. RESET / BASE
+   ============================================================ */
 * {
     margin: 0;
     padding: 0;
@@ -11,7 +14,10 @@ body {
     min-height: 100vh;
 }
 
-/* ========== ОБЩИЙ LAYOUT (Grid) ========== */
+
+/* ============================================================
+   2. LAYOUT (Grid)
+   ============================================================ */
 .app-layout {
     display: grid;
     grid-template-rows: 64px 1fr;
@@ -22,7 +28,10 @@ body {
     min-height: 100vh;
 }
 
-/* ========== HEADER ========== */
+
+/* ============================================================
+   3. HEADER
+   ============================================================ */
 .app-header {
     grid-area: header;
     background: #2c3e50;
@@ -77,7 +86,10 @@ body {
     background: rgba(255, 255, 255, 0.1);
 }
 
-/* ========== SIDEBAR ========== */
+
+/* ============================================================
+   4. SIDEBAR
+   ============================================================ */
 .app-sidebar {
     grid-area: sidebar;
     background: #34495e;
@@ -107,14 +119,32 @@ body {
     color: white;
 }
 
-/* ========== MAIN CONTENT ========== */
+
+/* ============================================================
+   5. MAIN CONTENT
+   ============================================================ */
 .app-main {
     grid-area: main;
     padding: 24px;
     overflow-y: auto;
 }
 
-/* ========== FLASH MESSAGES ========== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    color: #2c3e50;
+}
+
+
+/* ============================================================
+   6. FLASH MESSAGES
+   ============================================================ */
 .messages {
     margin-bottom: 20px;
 }
@@ -144,7 +174,237 @@ body {
     border: 1px solid #bee5eb;
 }
 
-/* ========== LOGIN PAGE ========== */
+
+/* ============================================================
+   7. BUTTONS
+   ============================================================ */
+
+/* --- Основная кнопка (submit, primary action) --- */
+.btn-primary,
+.btn-submit {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #1abc9c;
+    color: white;
+    font-size: 14px;
+    font-family: inherit;          /* ← наследовать шрифт */
+    line-height: 1.4;  
+    border: 1px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover,
+.btn-submit:hover {
+    background: #16a085;
+}
+
+/* --- Вторичная кнопка (отмена, назад) --- */
+.btn-cancel {
+    display: inline-block;
+    padding: 10px 20px;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.btn-cancel:hover {
+    background: #f5f5f5;
+    border-color: #bbb;
+    color: #333;
+}
+
+/* --- Кнопки действий в таблице (маленькие) --- */
+.btn-action {
+    display: inline-block;
+    padding: 6px 14px;
+    font-size: 13px;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.btn-edit {
+    background: #e7f3ff;
+    color: #0066cc;
+    border-color: #cce0ff;
+}
+
+.btn-edit:hover {
+    background: #d0e7ff;
+}
+
+.btn-current,
+.btn-reset {
+    background: #fff3e0;
+    color: #cc7a00;
+    border-color: #ffd9a0;
+}
+
+.btn-current:hover,
+.btn-reset:hover {
+    background: #ffe7cc;
+}
+
+
+/* ============================================================
+   8. TABLE
+   ============================================================ */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.data-table thead {
+    background: #f8f9fa;
+}
+
+.data-table th {
+    text-align: left;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.data-table td {
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+    transition: background 0.15s;
+}
+
+.data-table .empty-row td {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-style: italic;
+}
+
+
+/* ============================================================
+   9. FORMS
+   ============================================================ */
+.form {
+    background: white;
+    padding: 32px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="date"],
+.form-group input[type="time"],
+.form-group input[type="password"],
+.form-group input[type="email"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #333;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.15);
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+
+/* ============================================================
+   10. UTILITIES
+   ============================================================ */
+.hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #999;
+}
+
+.field-error {
+    display: block;
+    margin-top: 4px;
+    font-size: 13px;
+    color: #dc3545;
+}
+
+
+/* ============================================================
+   11. LOGIN PAGE (page-auth)
+   ============================================================ */
 .page-auth .app-layout {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -219,121 +479,89 @@ body {
     background: #16a085;
 }
 
-/* ========== TABLE ========== */
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
+/* ========== CREATED PAGE ========== */
+.created-card {
     background: white;
+    padding: 32px;
     border-radius: 8px;
-    overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    max-width: 600px;
+    margin: 0 auto;
 }
 
-.data-table thead {
-    background: #f8f9fa;
-}
-
-.data-table th {
-    text-align: left;
-    padding: 14px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #555;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #e9ecef;
-}
-
-.data-table td {
-    padding: 14px 18px;
-    font-size: 14px;
-    color: #333;
-    border-bottom: 1px solid #f0f0f0;
-    vertical-align: middle;
-}
-
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-.data-table tbody tr:hover {
-    background: #f8f9fa;
-    transition: background 0.15s;
-}
-
-/* Пустой список */
-.data-table .empty-row td {
-    text-align: center;
-    padding: 40px;
-    color: #999;
-    font-style: italic;
-}
-
-/* ========== КНОПКИ ДЕЙСТВИЙ ========== */
-.btn-action {
-    display: inline-block;
-    padding: 6px 14px;
-    font-size: 13px;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: background 0.2s;
-    border: 1px solid transparent;
-}
-
-.btn-edit {
-    background: #e7f3ff;
-    color: #0066cc;
-    border-color: #cce0ff;
-}
-
-.btn-edit:hover {
-    background: #d0e7ff;
-}
-
-.btn-reset {
-    background: #fff3e0;
-    color: #cc7a00;
-    border-color: #ffd9a0;
-}
-
-.btn-reset:hover {
-    background: #ffe7cc;
-}
-
-/* ========== ЗАГОЛОВОК + КНОПКА СОЗДАНИЯ ========== */
-.page-header {
+.created-card .alert {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    gap: 10px;
 }
 
-.page-header h1 {
-    font-size: 24px;
+.icon-success {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.credentials {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.credential-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.credential-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.credential-row:first-child {
+    padding-top: 0;
+}
+
+.credential-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    min-width: 70px;
+}
+
+.credential-value {
+    flex: 1;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: 16px;
+    font-weight: 600;
     color: #2c3e50;
+    background: white;
+    padding: 8px 14px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
 }
 
-.btn-primary {
-    padding: 10px 20px;
+.btn-copy {
+    padding: 8px 16px;
+    font-size: 13px;
     background: #1abc9c;
     color: white;
-    text-decoration: none;
     border: none;
     border-radius: 4px;
-    font-size: 14px;
     cursor: pointer;
     transition: background 0.2s;
+    white-space: nowrap;
 }
 
-.btn-primary:hover {
+.btn-copy:hover {
     background: #16a085;
 }
 
-.btn-current {
-    background: #fff3e0;
-    color: #cc7a00;
-    border-color: #ffd9a0;
-}
-.btn-current:hover {
-    background: #ffe7cc;
+.btn-copy.copied {
+    background: #27ae60;
 }

@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import Http404
-from Web.Decorators import login_required
+from Web.Decorators import login_required, role_required
 from Dal.database import get_session
 from Bll.Services.SchoolYear import SchoolYearService
 from Bll.Schemas.SchoolYear import SchoolYearCreate, SchoolYearUpdate
+from Core.Enums import RoleName
 
 @login_required
+@role_required(RoleName.ADMIN)
 def school_years_list(request):
     with get_session() as db:
         service = SchoolYearService(db)
@@ -19,6 +21,7 @@ def school_years_list(request):
     })
 
 @login_required
+@role_required(RoleName.ADMIN)
 def school_year_create(request):
     with get_session() as db:
         service = SchoolYearService(db)
@@ -39,7 +42,9 @@ def school_year_create(request):
             "action": "create",
             "year": None,
         })
+
 @login_required
+@role_required(RoleName.ADMIN)
 def school_year_edit(request, year_id: int):
     with get_session() as db:
         service = SchoolYearService(db)
@@ -65,8 +70,9 @@ def school_year_edit(request, year_id: int):
             "action": "edit",
             "year": year,
         })
-    
+
 @login_required
+@role_required(RoleName.ADMIN)
 def school_year_make_current(request, year_id: int):
     if request.method != "POST":
         raise Http404()

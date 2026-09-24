@@ -6,8 +6,8 @@ from Bll.Services.User import UserService
 # Create your views here.
 def login_view(request):
     if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
         if not username or not password:
             messages.error(request, "Введите логин или пароль!")
             return render(request, "Login.html")
@@ -19,8 +19,6 @@ def login_view(request):
             return render(request, "Login.html")
 
         request.session["user_id"] = user.id
-        request.session["username"] = user.username
-
         return redirect("home")
     return render(request, "Login.html")
 
