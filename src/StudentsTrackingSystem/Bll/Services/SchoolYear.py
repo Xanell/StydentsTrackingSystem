@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from Bll.Schemas.SchoolYear import SchoolYearCreate, SchoolYearDetail, SchoolYearShort, SchoolYearUpdate
+from Bll.Schemas.SchoolYear import SchoolYearCreate, SchoolYearDetail, SchoolYearUpdate
 from Dal.Repositories.SchoolYear import SchoolYearRepository
 from Dal.Repositories.SchoolCalendar import SchoolCalendarRepository
 from Dal.Repositories.SchoolQuarter import QuarterRepository
@@ -17,11 +17,10 @@ class SchoolYearService:
         if end_date <= start_date:
             raise ValueError("Ошибка!!")
 
-        year_name = f"{start_date.year}/{end_date.year}"
-        if self.school_year_repo.get_by_name(year_name) is not None:
-            raise ValueError("Ошибка такой год уже есть!")
+        if self.school_year_repo.get_by_name(data.name) is not None:
+            raise ValueError(f"Год '{data.name}' уже существует")
 
-        new_year = self.school_year_repo.create_school_year(name=year_name, start_date=start_date, end_date=end_date, is_current=False)
+        new_year = self.school_year_repo.create_school_year(name=data.name, start_date=data.start_date, end_date=data.end_date, is_current=False)
         return SchoolYearDetail.model_validate(new_year)
     
     def update_year(self, year_id: int, data: SchoolYearUpdate) -> SchoolYearDetail:
@@ -29,8 +28,9 @@ class SchoolYearService:
         if year is None:
             raise ValueError(f"Год с id={year_id} не найден")
 
-        new_start = data.start_date or year.start_date
-        new_end = data.end_date or year.end_date
+        new_start = data.start_date if data.start_date is not None else year.start_date
+        new_end = data.end_date if data.end_date is not None else year.end_date
+        new_name = data.name if data.name is not None else year.name
 
         # Проверка: даты корректны
         if new_end <= new_start:
@@ -69,11 +69,11 @@ class SchoolYearService:
             raise ValueError("Ошибка!!")
         return SchoolYearDetail.model_validate(curr_year)
 
-    def get_all(self) -> list[SchoolYearShort]:
+    def get_all(self) -> list[SchoolYearDetail]:
         year_list = self.school_year_repo.get_all()
         result = []
         for year in year_list:
-            result.append(SchoolYearShort.model_validate(year))
+            result.append(SchoolYearDetail.model_validate(year))
         return result
 
     def get_current(self) -> SchoolYearDetail | None:
