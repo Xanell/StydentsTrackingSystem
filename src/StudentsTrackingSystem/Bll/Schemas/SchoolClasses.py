@@ -4,6 +4,7 @@ class SchoolClassShort(BaseSchema):
     id: int
     number: int
     letter: str
+    school_year_id: int
 
 class SchoolClassCreate(BaseSchema):
     number: int
