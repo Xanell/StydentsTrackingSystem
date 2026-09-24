@@ -1,14 +1,16 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import Http404
-from Web.Decorators import login_required
+from Web.Decorators import login_required, role_required
 from Dal.database import get_session
 from Bll.Services.SchoolClasses import SchoolClassService
 from Bll.Services.SchoolYear import SchoolYearService
 from Bll.Schemas.SchoolClasses import SchoolClassCreate, SchoolClassUpdate
 from Core.Exceptions import BllError, NotFoundError
+from Core.Enums import RoleName
 
 @login_required
+@role_required(RoleName.ADMIN)
 def classes_root(request):
     with get_session() as db:
         year_service = SchoolYearService(db)
@@ -20,7 +22,8 @@ def classes_root(request):
 
     return redirect("school_classes", year_id=current.id)
 
-login_required
+@login_required
+@role_required(RoleName.ADMIN)
 def school_classes_list(request, year_id: int):
 
     with get_session() as db:
@@ -41,6 +44,7 @@ def school_classes_list(request, year_id: int):
     })
 
 @login_required
+@role_required(RoleName.ADMIN)
 def school_class_create(request, year_id: int):
     with get_session() as db:
         year_service = SchoolYearService(db)
@@ -73,8 +77,9 @@ def school_class_create(request, year_id: int):
             "year_id": year_id,
             "school_class": None,
         })
-
+    
 @login_required
+@role_required(RoleName.ADMIN)
 def school_class_edit(request, year_id: int, class_id: int):
     with get_session() as db:
         class_service = SchoolClassService(db)

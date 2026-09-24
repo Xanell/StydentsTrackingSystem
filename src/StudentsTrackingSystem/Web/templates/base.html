@@ -20,25 +20,33 @@
             </div>
 
             <div class="header-right">
-                {% if request.session.user_id %}
-                    <span class="user-name">{{ request.session.username }}</span>
+                 {% if request.current_user %}
+                    <span class="user-name">{{ request.current_user.username }}</span>
                     <a href="{% url 'logout' %}" class="btn-logout">Выйти</a>
                 {% endif %}
             </div>
         </header>
 
         <!-- SIDEBAR -->
-        {% if request.session.user_id %}
+        {% if request.current_user %}
         <aside class="app-sidebar">
             <nav class="sidebar-menu">
                 <a href="{% url 'home' %}" class="menu-item">🏠 Главная</a>
+                {% if request.is_admin %}
                 <a href="{% url 'school_years' %}" class="menu-item">📅 Учебные годы</a>
                 <a href="{% url 'classes_root' %}" class="menu-item">🏫 Классы</a>
+                <a href="{% url 'users' %}" class="menu-item">👥 Пользователи</a>
+                {% endif %}
+                {% if request.is_admin or request.is_teacher %}
                 <a href="#" class="menu-item">📚 Предметы</a>
                 <a href="#" class="menu-item">⏰ Периоды уроков</a>
                 <a href="#" class="menu-item">📖 Расписание</a>
                 <a href="#" class="menu-item">📝 Уроки</a>
-                <a href="{% url 'users' %}" class="menu-item">👥 Пользователи</a>
+                {% endif %}
+                {% if request.is_student %}
+                    <a href="#" class="menu-item">📖 Моё расписание</a>
+                    <a href="#" class="menu-item">📝 Мои оценки</a>
+                {% endif %}
             </nav>
         </aside>
         {% endif %}

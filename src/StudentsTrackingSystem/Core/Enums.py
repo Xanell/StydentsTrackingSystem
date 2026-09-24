@@ -19,8 +19,8 @@ class RoleName:
 
     ALL = (STUDENT, TEACHER, ADMIN)
 
-
-class RoleLabel:
-    STUDENT = "Ученик"
-    TEACHER = "Учитель"
-    ADMIN = "Администратор"
+ROLE_LABELS = {
+    RoleName.STUDENT: "Ученик",
+    RoleName.TEACHER: "Учитель",
+    RoleName.ADMIN: "Администратор",
+}
