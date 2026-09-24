@@ -9,7 +9,7 @@ class LessonsRepository:
         self.db = session
 
     # Создаёт новый урок и сохраняет в БД
-    def create_lesson(self, lesson_date: date, topic: str, homework_description: str | None, homework_due_date: date | None, files: str | None, schedule_id: int) -> Lessons:
+    def create_lesson(self, lesson_date: date, topic: str, homework_description: str | None, homework_due_date: date | None, files: str | None, schedule_id: int) -> Lesson:
         lesson = Lesson(
             lesson_date=lesson_date,
             topic=topic,

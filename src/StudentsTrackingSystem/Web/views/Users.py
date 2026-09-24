@@ -102,6 +102,8 @@ def user_edit(request, user_id: int):
                     class_id=request.POST.get("class_id") or None
                 )
                 update = user_service.update_user(user_id, data)
+                if user.school_class is not None and update.school_class is None:
+                    messages.info(request,"Класс был сброшен, потому что выбранная роль — не ученик")
                 messages.success(request, f"Пользователь {update.username} обновлён")
                 return redirect("users")
             except BllError as e:

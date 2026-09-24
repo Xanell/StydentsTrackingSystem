@@ -102,15 +102,19 @@ class UserService:
         if role is None:
             raise NotFoundError(f"Роль с id={new_role_id} не найдена")
 
-        if new_class_id is not None:
-            # Класс указан — проверить, что роль = ученик
-            if role.name != RoleName.STUDENT:
+        if role.name != RoleName.STUDENT:
+            if new_role_id != user.role_id:
+                self.user_repo.clear_class(user_id)
+                new_class_id = None
+            elif new_class_id is not None and new_class_id != user.class_id:
                 raise BusinessValidationError(
                     "Только ученик может быть привязан к классу"
                 )
-            # Проверить, что класс существует
-            if self.school_class_repo.get_class_by_id(new_class_id) is None:
-                raise NotFoundError(f"Класс с id={new_class_id} не найден")
+
+        else:
+            if new_class_id is not None:
+                if self.school_class_repo.get_class_by_id(new_class_id) is None:
+                    raise NotFoundError(f"Класс с id={new_class_id} не найден")
 
         update = self.user_repo.update_user(
             user_id,

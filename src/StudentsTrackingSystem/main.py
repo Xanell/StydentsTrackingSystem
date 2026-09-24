@@ -20,7 +20,7 @@ def reset_tables():
     print("Таблицы пересозданы.")
 
 if __name__ == "__main__":
-    create_tables()
+    reset_tables()
 
     with SessionLocal() as session:
         role_seed(session)

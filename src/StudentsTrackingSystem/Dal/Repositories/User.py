@@ -7,7 +7,7 @@ class UserRepository:
     def __init__(self, session: Session):
         self.db = session
 
-    def create_user(self, username: str, password: str, first_name: str, last_name: str,middle_name: str, role_id: int, class_id: int | None) -> Users:
+    def create_user(self, username: str, password: str, first_name: str, last_name: str,middle_name: str, role_id: int, class_id: int | None) -> User:
         new_user = User(
             username = username, 
             password = password, 
@@ -70,7 +70,7 @@ class UserRepository:
                 )
         return self.db.scalars(stmt).all()
 
-    def clear_class(self, user_id: int) -> Users | None:
+    def clear_class(self, user_id: int) -> User | None:
         user = self.get_by_id(user_id)
         if user is None:
             return None
