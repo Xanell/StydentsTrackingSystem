@@ -1,60 +1,84 @@
-from sqlalchemy.orm import Session
+from datetime import date
+
 from sqlalchemy import select
+from sqlalchemy.orm import Session, joinedload
+
 from ..DTOs.Attendance import Attendance
+from ..DTOs.Lessons import Lesson
+
 
 class AttendanceRepository:
+    """Посещаемость не удаляется — только переключается «был / не был»."""
+
     def __init__(self, session: Session):
         self.db = session
-
-    def create_attendance(self, lesson_id: int, student_id: int, is_present: bool, reason: str | None = None) -> Attendance:
-        new_attendance = Attendance(
-            lesson_id=lesson_id,
-            student_id=student_id,
-            is_present=is_present,
-            reason=reason
-            )
-        self.db.add(new_attendance)
-        self.db.commit()
-        self.db.refresh(new_attendance)
-
-        return new_attendance
 
     def get_by_id(self, attendance_id: int) -> Attendance | None:
         return self.db.get(Attendance, attendance_id)
 
-    def get_all(self) -> list[Attendance]:
-        return self.db.scalars(select(Attendance)).all()
-
-    def update_attendance(self, attendance_id: int, is_present: bool | None = None, reason: str | None = None) -> Attendance | None:
-        attendance = self.get_by_id(attendance_id)
-        if attendance is None:
-            return None
-        if is_present is not None:
-            attendance.is_present = is_present
-        if reason is not None:
-            attendance.reason = reason
-        self.db.commit()
-        self.db.refresh(attendance)
-        return attendance
-
-    def delete_attendance(self, attendance_id: int) -> bool:
-        attendance = self.get_by_id(attendance_id)
-        if attendance is None:
-            return False
-        self.db.delete(attendance)
-        self.db.commit()
-        return True
-
     def get_by_lesson(self, lesson_id: int) -> list[Attendance]:
         stmt = select(Attendance).where(Attendance.lesson_id == lesson_id)
-        return self.db.scalars(stmt).all()
+        return list(self.db.scalars(stmt).all())
 
     def get_by_lesson_and_student(self, lesson_id: int, student_id: int) -> Attendance | None:
+        stmt = select(Attendance).where(Attendance.lesson_id == lesson_id, Attendance.student_id == student_id)
+        return self.db.scalars(stmt).one_or_none()
+
+    def save_for_lesson(self, lesson_id: int, marks: dict[int, tuple[bool, str | None]]) -> list[Attendance]:
+        """
+        Сохранить отметки всего класса за урок одной операцией.
+        marks: {student_id: (is_present, reason)}.
+        Для новых учеников строка создаётся, для уже отмеченных — обновляется.
+        Повторная отправка формы ничего не дублирует.
+        """
+        existing = {}
+        for record in self.get_by_lesson(lesson_id):
+            existing[record.student_id] = record
+        for student_id, (is_present, reason) in marks.items():
+            reason = None if is_present else reason
+            record = existing.get(student_id)
+            if record is None:
+                record = Attendance(lesson_id=lesson_id, student_id=student_id, is_present=is_present, reason=reason)
+                self.db.add(record)
+                existing[student_id] = record
+            else:
+                record.is_present = is_present
+                record.reason = reason
+        self.db.commit()
+        return list(existing.values())
+
+    def update_attendance(self, attendance_id: int, is_present: bool, reason: str | None = None) -> Attendance | None:
+        """Исправить одну отметку. При is_present=True причина очищается."""
+        record = self.get_by_id(attendance_id)
+        if record is None:
+            return None
+        record.is_present = is_present
+        record.reason = None if is_present else reason
+        self.db.commit()
+        self.db.refresh(record)
+        return record
+
+    def get_by_lesson_ids(self, lesson_ids: list[int]) -> list[Attendance]:
+        """Все отметки по набору уроков — для сетки журнала одним запросом."""
+        if not lesson_ids:
+            return []
+        stmt = select(Attendance).where(Attendance.lesson_id.in_(lesson_ids))
+        return list(self.db.scalars(stmt).all())
+
+    def get_absences_by_student_and_period(self, student_id: int, start_date: date, end_date: date) -> list[Attendance]:
+        """Пропуски ученика за период — для дневника и отчёта о посещаемости."""
         stmt = (
             select(Attendance)
+            .join(Lesson, Attendance.lesson_id == Lesson.id)
             .where(
-                Attendance.lesson_id == lesson_id,
-                Attendance.student_id == student_id
+                Attendance.student_id == student_id,
+                Attendance.is_present.is_(False),
+                Lesson.lesson_date >= start_date,
+                Lesson.lesson_date <= end_date,
             )
+            .options(joinedload(Attendance.lesson))
+            .order_by(Lesson.lesson_date, Lesson.lesson_number)
         )
-        return self.db.scalars(stmt).one_or_none()
+        return list(self.db.scalars(stmt).all())
+
+    # Удаления нет: посещаемость не удаляется.

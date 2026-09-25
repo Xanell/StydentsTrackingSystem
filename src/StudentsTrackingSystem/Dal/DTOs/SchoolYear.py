@@ -1,17 +1,34 @@
-from .Base import Base
-from sqlalchemy import Integer, String, Date, Boolean
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import date
 
-class SchoolYear(Base):
-    __tablename__ = "SchoolYear"
+from sqlalchemy import CheckConstraint, Date, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(30), unique=True)
+from .Base import Base
+
+
+class SchoolYear(Base):
+    """
+    Не удаляется. Ошибку в датах или названии админ исправляет редактированием.
+    Текущим может быть только один год — это обеспечивает SchoolYearRepository.make_current.
+    """
+
+    __tablename__ = "school_years"
+    __table_args__ = (
+        CheckConstraint("end_date > start_date"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(30), unique=True)  # "2026/2027"
     start_date: Mapped[date] = mapped_column(Date)
     end_date: Mapped[date] = mapped_column(Date)
-    is_current: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_current: Mapped[bool] = mapped_column(default=False)
 
+    quarters: Mapped[list["SchoolQuarter"]] = relationship(
+        back_populates="school_year",
+        order_by="SchoolQuarter.number",
+    )
+    days_off: Mapped[list["DayOff"]] = relationship(
+        back_populates="school_year",
+        order_by="DayOff.start_date",
+    )
     school_classes: Mapped[list["SchoolClass"]] = relationship(back_populates="school_year")
-    school_calendar: Mapped[list["SchoolCalendar"]] = relationship(back_populates="school_year")
-    quarters: Mapped[list["SchoolQuarter"]] = relationship(back_populates="school_year")

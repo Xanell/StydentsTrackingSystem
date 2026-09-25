@@ -1,10 +1,9 @@
 from sqlalchemy.orm import Session
-from Bll.Schemas.Attendance import AttendanceCreate, AttendanceDetail, AttendanceUpdate
+from Bll.Schemas.Attendance import AttendanceDetail, AttendanceSave, AttendanceUpdate
+from Core.Exceptions import BusinessValidationError, NotFoundError
 from Dal.Repositories.Attendance import AttendanceRepository
 from Dal.Repositories.Lessons import LessonsRepository
 from Dal.Repositories.User import UserRepository
-from Core.Enums import RoleName
-from Core.Exceptions import NotFoundError, ConflictError, BusinessValidationError
 
 class AttendanceService:
     def __init__(self, session: Session):
@@ -12,59 +11,34 @@ class AttendanceService:
         self.lesson_repo = LessonsRepository(session)
         self.user_repo = UserRepository(session)
 
-    def create_attendance(self, data: AttendanceCreate) -> AttendanceDetail:
-
-        if self.lesson_repo.get_by_id(data.lesson_id) is None:
-            raise NotFoundError(f"Урок #{data.lesson_id} не найден")
-
-        student = self.user_repo.get_by_id(data.student_id)
-        if student is None:
-            raise NotFoundError(f"Пользователь #{data.student_id} не найден")
-        if student.role.name != RoleName.STUDENT:
-            raise BusinessValidationError(f"Пользователь #{data.student_id} не является учеником")
-
-        existing = self.attendance_repo.get_by_lesson_and_student(data.lesson_id, data.student_id)
-        if existing is not None:
-            raise ConflictError(f"Ученик #{data.student_id} уже отмечен на уроке #{data.lesson_id}")
-
-        new_attendance = self.attendance_repo.create_attendance(
-            lesson_id=data.lesson_id,
-            student_id=data.student_id,
-            is_present=data.is_present,
-            reason=data.reason,
-        )
-        return AttendanceDetail.model_validate(new_attendance)
-
-    def get_by_id(self, attendance_id: int) -> AttendanceDetail:
-        attendance = self.attendance_repo.get_by_id(attendance_id)
-        if attendance is None:
-            raise NotFoundError("Ошибка: посещение не найдено!")
-        return AttendanceDetail.model_validate(attendance)
-
-    def get_all_attendances(self) -> list[AttendanceDetail]:
-        all_attendances = self.attendance_repo.get_all()
+    def _to_details(self, records) -> list[AttendanceDetail]:
         result = []
-        for attendance in all_attendances:
-            result.append(AttendanceDetail.model_validate(attendance))
+        for record in records:
+            result.append(AttendanceDetail.model_validate(record))
         return result
 
-    def get_by_lesson(self, lesson_id: int) -> list[AttendanceDetail]:
-        attendances = self.attendance_repo.get_by_lesson(lesson_id)
-        result = []
-        for attendance in attendances:
-            result.append(AttendanceDetail.model_validate(attendance))
-        return result
+    def save_for_lesson(self, data: AttendanceSave) -> list[AttendanceDetail]:
+        """Сохранить отметки всего класса за урок. Повторное сохранение обновляет отметки."""
+        lesson = self.lesson_repo.get_by_id(data.lesson_id)
+        if lesson is None:
+            raise NotFoundError(f"Урок с id={data.lesson_id} не найден")
 
+        marks = {}
+        for item in data.items:
+            student = self.user_repo.get_by_id(item.student_id)
+            if student is None or student.class_id != lesson.class_id:
+                raise BusinessValidationError(f"Ученик с id={item.student_id} не учится в классе этого урока")
+            marks[item.student_id] = (item.is_present, item.reason)
+
+        records = self.attendance_repo.save_for_lesson(data.lesson_id, marks)
+        return self._to_details(records)
 
     def update_attendance(self, attendance_id: int, data: AttendanceUpdate) -> AttendanceDetail:
-        attendance = self.attendance_repo.get_by_id(attendance_id)
-        if attendance is None:
-            raise NotFoundError("Ошибка: посещение не найдено!")
-        new_is_present = data.is_present if data.is_present is not None else attendance.is_present
-        new_reason = data.reason if data.reason is not None else attendance.reason
-        updated = self.attendance_repo.update_attendance(
-            attendance_id,
-            is_present=new_is_present,
-            reason=new_reason,
-        )
-        return AttendanceDetail.model_validate(updated)
+        """Исправить одну отметку, например ошибочную «Н»."""
+        if self.attendance_repo.get_by_id(attendance_id) is None:
+            raise NotFoundError(f"Отметка с id={attendance_id} не найдена")
+        record = self.attendance_repo.update_attendance(attendance_id, data.is_present, data.reason)
+        return AttendanceDetail.model_validate(record)
+
+    def get_by_lesson(self, lesson_id: int) -> list[AttendanceDetail]:
+        return self._to_details(self.attendance_repo.get_by_lesson(lesson_id))

@@ -1,42 +1,40 @@
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+
 from ..DTOs.Subjects import Subject
+from .Common import UNSET, apply_updates
+
 
 class SubjectsRepository:
-    # Конструктор: принимает сессию БД и сохраняет её для дальнейшего использования
     def __init__(self, session: Session):
         self.db = session
 
-    # Создаёт новый предмет и сохраняет его в БД, возвращает объект с присвоенным id
-    def create_subject(self, name: str, description: str) -> Subject:
-        subject = Subject(name=name, description=description)
+    def create_subject(self, name: str, short_name: str | None = None) -> Subject:
+        subject = Subject(name=name, short_name=short_name)
         self.db.add(subject)
         self.db.commit()
         self.db.refresh(subject)
         return subject
 
-    # Ищет предмет по его id, возвращает объект или None, если не найден
     def get_by_id(self, subject_id: int) -> Subject | None:
         return self.db.get(Subject, subject_id)
 
-    # Ищет предмет по имени, возвращает объект или None, если не найден
     def get_by_name(self, name: str) -> Subject | None:
-        stmt = select(Subject).where(Subject.name == name)
-        return self.db.scalars(stmt).one_or_none()
+        """Поиск без учёта регистра, чтобы не завести «Математику» и «математику»."""
+        stmt = select(Subject).where(func.lower(Subject.name) == name.strip().lower())
+        return self.db.scalars(stmt).first()
 
-    # Возвращает список всех предметов из таблицы
     def get_all(self) -> list[Subject]:
-        return self.db.scalars(select(Subject)).all()
+        stmt = select(Subject).order_by(Subject.name)
+        return list(self.db.scalars(stmt).all())
 
-    # Обновляет имя и/или описание предмета по id, возвращает обновлённый объект или None
-    def update_subject(self, subject_id: int, name: str | None = None, description: str | None = None) -> Subject | None:
+    def update_subject(self, subject_id: int, name: str = UNSET, short_name: str | None = UNSET) -> Subject | None:
         subject = self.get_by_id(subject_id)
         if subject is None:
             return None
-        if name is not None:
-            subject.name = name
-        if description is not None:
-            subject.description = description
+        apply_updates(subject, name=name, short_name=short_name)
         self.db.commit()
         self.db.refresh(subject)
         return subject
+
+    # delete_subject нет: предметы не удаляются, их можно только переименовать.

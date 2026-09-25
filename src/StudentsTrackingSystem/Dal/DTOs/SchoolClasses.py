@@ -1,20 +1,29 @@
-from .Base import Base
-from sqlalchemy import Integer, String, ForeignKey, SmallInteger, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, SmallInteger, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .Base import Base
+
+
 class SchoolClass(Base):
-    __tablename__ = "SchoolClasses"
+    """
+    Класс в конкретном учебном году. 5А в 2025/26 и 6А в 2026/27 — две разные строки,
+    поэтому уроки и оценки прошлых лет остаются привязаны к своему классу.
+    Не удаляется: ошибочный «5Я» админ исправляет редактированием.
+    """
+
+    __tablename__ = "classes"
     __table_args__ = (
-        UniqueConstraint(
-            "school_year_id", "number", "letter"
-        ),
+        UniqueConstraint("school_year_id", "number", "letter"),
+        CheckConstraint("number BETWEEN 1 AND 11"),
     )
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    number: Mapped[int] = mapped_column(SmallInteger, nullable=False)
-    letter: Mapped[str] = mapped_column(String(1), nullable=False)
-    school_year_id: Mapped[int] = mapped_column(ForeignKey("SchoolYear.id"))
+    id: Mapped[int] = mapped_column(primary_key=True)
+    number: Mapped[int] = mapped_column(SmallInteger)  # 5
+    letter: Mapped[str] = mapped_column(String(1))     # "А"
+    school_year_id: Mapped[int] = mapped_column(ForeignKey("school_years.id"))
 
-    students: Mapped[list["User"]] = relationship(back_populates="school_class")
-    school_year: Mapped["SchoolYear"] = relationship(back_populates="school_classes")
-    schedules: Mapped[list["Schedule"]] = relationship(back_populates="school_class")
+    school_year: Mapped["SchoolYear"] = relationship(back_populates="school_classes", lazy="joined")
+    students: Mapped[list["User"]] = relationship(
+        back_populates="school_class",
+        order_by="[User.last_name, User.first_name]",
+    )

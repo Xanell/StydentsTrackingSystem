@@ -1,87 +1,88 @@
 from datetime import date
 from sqlalchemy.orm import Session
-from Bll.Schemas.SchoolQuarter import SchoolQuarterCreate, SchoolQuarterDetail, SchoolQuarterShort, SchoolQuarterUpdate
+from Bll.Schemas.SchoolQuarter import SchoolQuarterCreate, SchoolQuarterDetail, SchoolQuarterUpdate
+from Core.Exceptions import BusinessValidationError, ConflictError, NotFoundError
 from Dal.Repositories.SchoolQuarter import QuarterRepository
 from Dal.Repositories.SchoolYear import SchoolYearRepository
-from Core.Exceptions import NotFoundError, ConflictError, BusinessValidationError
 
 class SchoolQuarterService:
     def __init__(self, session: Session):
-        self.school_quarter_repo = QuarterRepository(session)
+        self.quarter_repo = QuarterRepository(session)
         self.school_year_repo = SchoolYearRepository(session)
 
-    def create_quarter(self, data: SchoolQuarterCreate) -> SchoolQuarterDetail:
-        year = self.school_year_repo.get_by_id(data.school_year_id)
+    def _get_quarter(self, quarter_id: int):
+        quarter = self.quarter_repo.get_by_id(quarter_id)
+        if quarter is None:
+            raise NotFoundError(f"Четверть с id={quarter_id} не найдена")
+        return quarter
+
+    def _check_dates(
+        self, school_year_id: int, number: int, start_date: date, end_date: date, exclude_id: int | None = None
+    ) -> None:
+        year = self.school_year_repo.get_by_id(school_year_id)
         if year is None:
-            raise NotFoundError(f"Год с id={data.school_year_id} не найден")
+            raise NotFoundError(f"Учебный год с id={school_year_id} не найден")
 
-        if data.end_date <= data.start_date:
+        if end_date <= start_date:
             raise BusinessValidationError("Дата окончания должна быть позже даты начала")
+        if start_date < year.start_date or end_date > year.end_date:
+            raise BusinessValidationError(f"Четверть должна быть внутри учебного года {year.name}")
 
-        if not (year.start_date <= data.start_date <= year.end_date):
-            raise BusinessValidationError("Дата начала четверти вне границ учебного года")
-        if not (year.start_date <= data.end_date <= year.end_date):
-            raise BusinessValidationError("Дата окончания четверти вне границ учебного года")
+        # Четверти идут по порядку и не пересекаются:
+        # предыдущие по номеру заканчиваются раньше, следующие начинаются позже.
+        for other in self.quarter_repo.get_by_year(school_year_id):
+            if other.id == exclude_id:
+                continue
+            if other.number < number and other.end_date >= start_date:
+                raise BusinessValidationError(
+                    f"Четверть {number} должна начинаться после окончания четверти {other.number} ({other.end_date})"
+                )
+            if other.number > number and other.start_date <= end_date:
+                raise BusinessValidationError(
+                    f"Четверть {number} должна заканчиваться до начала четверти {other.number} ({other.start_date})"
+                )
 
-        if self.school_quarter_repo.get_by_number(data.school_year_id, data.number) is not None:
-            raise ConflictError(f"Четверть с номером {data.number} уже существует в этом году")
+    def create_quarter(self, data: SchoolQuarterCreate) -> SchoolQuarterDetail:
+        if self.quarter_repo.get_by_number(data.school_year_id, data.number) is not None:
+            raise ConflictError(f"Четверть {data.number} в этом году уже есть")
+        self._check_dates(data.school_year_id, data.number, data.start_date, data.end_date)
 
-        new_quarter = self.school_quarter_repo.create_quarter(
+        quarter = self.quarter_repo.create_quarter(
             school_year_id=data.school_year_id,
             number=data.number,
             start_date=data.start_date,
             end_date=data.end_date,
         )
-        return SchoolQuarterDetail.model_validate(new_quarter)
-
-    def get_by_id(self, quarter_id: int) -> SchoolQuarterDetail:
-        quarter = self.school_quarter_repo.get_by_id(quarter_id)
-
-        if quarter is None:
-            raise NotFoundError(f"Четверть #{quarter_id} не найдена")
         return SchoolQuarterDetail.model_validate(quarter)
 
-    def get_all_quarters(self, year_id: int) -> list[SchoolQuarterDetail]:
-        year = self.school_year_repo.get_by_id(year_id)
-        if year is None:
-            raise NotFoundError(f"Год с id={year_id} не найден")
+    def update_quarter(self, quarter_id: int, data: SchoolQuarterUpdate) -> SchoolQuarterDetail:
+        quarter = self._get_quarter(quarter_id)
+        self._check_dates(quarter.school_year_id, quarter.number, data.start_date, data.end_date, exclude_id=quarter_id)
 
-        quarters = self.school_quarter_repo.get_by_year(year_id)
+        updated = self.quarter_repo.update_quarter(
+            quarter_id,
+            start_date=data.start_date,
+            end_date=data.end_date,
+        )
+        return SchoolQuarterDetail.model_validate(updated)
+
+    def get_by_id(self, quarter_id: int) -> SchoolQuarterDetail:
+        return SchoolQuarterDetail.model_validate(self._get_quarter(quarter_id))
+
+    def get_by_year(self, school_year_id: int) -> list[SchoolQuarterDetail]:
+        if self.school_year_repo.get_by_id(school_year_id) is None:
+            raise NotFoundError(f"Учебный год с id={school_year_id} не найден")
         result = []
-        for quarter in quarters:
+        for quarter in self.quarter_repo.get_by_year(school_year_id):
             result.append(SchoolQuarterDetail.model_validate(quarter))
         return result
 
-    def get_current_quarter(self, year_id: int) -> SchoolQuarterDetail:
-        curr_quarter = self.school_quarter_repo.get_by_date(year_id, date.today())
-
-        if curr_quarter is None:
-            raise NotFoundError(f"На {date.today()} нет активной четверти в году {year_id}")
-        return SchoolQuarterDetail.model_validate(curr_quarter)
-
-    def update_quarter(self, quarter_id: int, data: SchoolQuarterUpdate) -> SchoolQuarterDetail:
-        quarter = self.school_quarter_repo.get_by_id(quarter_id)
-        if quarter is None:
-            raise NotFoundError(f"Четверть с id={quarter_id} не найдена")
-
-        new_start = data.start_date or quarter.start_date
-        new_end = data.end_date or quarter.end_date
-
-        if new_end <= new_start:
-            raise BusinessValidationError("Дата окончания должна быть позже даты начала")
-
-        year = self.school_year_repo.get_by_id(quarter.school_year_id)
+    def get_current(self) -> SchoolQuarterDetail | None:
+        """Текущая четверть текущего года. None — сейчас каникулы или текущий год не выбран."""
+        year = self.school_year_repo.get_current()
         if year is None:
-            raise NotFoundError(f"Год с id={quarter.school_year_id} не найден")
-
-        if not (year.start_date <= new_start <= year.end_date):
-            raise BusinessValidationError("Дата начала четверти вне границ учебного года")
-        if not (year.start_date <= new_end <= year.end_date):
-            raise BusinessValidationError("Дата окончания четверти вне границ учебного года")
-
-        updated = self.school_quarter_repo.update_quarter(
-            quarter_id,
-            start_date=new_start,
-            end_date=new_end,
-        )
-        return SchoolQuarterDetail.model_validate(updated)
+            return None
+        quarter = self.quarter_repo.get_by_date(year.id, date.today())
+        if quarter is None:
+            return None
+        return SchoolQuarterDetail.model_validate(quarter)

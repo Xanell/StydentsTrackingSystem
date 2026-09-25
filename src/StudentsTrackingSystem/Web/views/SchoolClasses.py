@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import Http404
+from pydantic import ValidationError
 from Web.Decorators import login_required, role_required
 from Dal.database import get_session
 from Bll.Services.SchoolClasses import SchoolClassService
@@ -35,7 +36,7 @@ def school_classes_list(request, year_id: int):
         except NotFoundError:
             raise Http404("Учебный год не найден")
 
-        classes = class_service.get_all_classes(year_id)
+        classes = class_service.get_by_year(year_id)
 
     return render(request, "school_classes/list.html", {
         "year": year,
@@ -58,8 +59,8 @@ def school_class_create(request, year_id: int):
         if request.method == "POST":
             try:
                 data = SchoolClassCreate(
-                    number=int(request.POST["number"]),
-                    letter=request.POST["letter"],
+                    number=request.POST.get("number", ""),
+                    letter=request.POST.get("letter", ""),
                     school_year_id=year_id,
                 )
                 new_class = class_service.create_class(data)
@@ -68,6 +69,8 @@ def school_class_create(request, year_id: int):
                     f"Класс {new_class.number}{new_class.letter} создан"
                 )
                 return redirect("school_classes", year_id=year_id)
+            except ValidationError:
+                messages.error(request, "Номер класса — от 1 до 11, буква — один символ")
             except BllError as e:
                 messages.error(request, str(e))
 
@@ -77,7 +80,7 @@ def school_class_create(request, year_id: int):
             "year_id": year_id,
             "school_class": None,
         })
-    
+
 @login_required
 @role_required(RoleName.ADMIN)
 def school_class_edit(request, year_id: int, class_id: int):
@@ -92,8 +95,8 @@ def school_class_edit(request, year_id: int, class_id: int):
         if request.method == "POST":
             try:
                 data = SchoolClassUpdate(
-                    number=int(request.POST["number"]) if request.POST.get("number") else None,
-                    letter=request.POST.get("letter") or None,
+                    number=request.POST.get("number", ""),
+                    letter=request.POST.get("letter", ""),
                 )
                 updated = class_service.update_class(class_id, data)
                 messages.success(
@@ -101,6 +104,8 @@ def school_class_edit(request, year_id: int, class_id: int):
                     f"Класс {updated.number}{updated.letter} обновлён"
                 )
                 return redirect("school_classes", year_id=year_id)
+            except ValidationError:
+                messages.error(request, "Номер класса — от 1 до 11, буква — один символ")
             except BllError as e:
                 messages.error(request, str(e))
 

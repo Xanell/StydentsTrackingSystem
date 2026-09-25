@@ -1,9 +1,6 @@
-from Bll.Schemas.Base import BaseSchema
 from datetime import date
-
-class SchoolQuarterShort(BaseSchema):
-    id: int
-    number: int
+from pydantic import Field
+from Bll.Schemas.Base import BaseSchema
 
 class SchoolQuarterDetail(BaseSchema):
     id: int
@@ -14,10 +11,11 @@ class SchoolQuarterDetail(BaseSchema):
 
 class SchoolQuarterCreate(BaseSchema):
     school_year_id: int
-    number: int
+    number: int = Field(ge=1, le=4)
     start_date: date
     end_date: date
 
 class SchoolQuarterUpdate(BaseSchema):
-    start_date: date | None = None
-    end_date: date | None = None
+    # Номер четверти не меняется, только даты.
+    start_date: date
+    end_date: date

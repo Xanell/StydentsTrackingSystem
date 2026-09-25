@@ -1,18 +1,14 @@
+from pydantic import Field
 from Bll.Schemas.Base import BaseSchema
-
-class SubjectShort(BaseSchema):
-    id: int
-    name: str
 
 class SubjectDetail(BaseSchema):
     id: int
     name: str
-    description: str
-
+    short_name: str | None
 class SubjectCreate(BaseSchema):
-    name: str
-    description: str
+    name: str = Field(min_length=1, max_length=50)
+    short_name: str | None = Field(default=None, max_length=10)
 
 class SubjectUpdate(BaseSchema):
-    name: str | None = None
-    description: str | None = None
+    name: str = Field(min_length=1, max_length=50)
+    short_name: str | None = Field(default=None, max_length=10)

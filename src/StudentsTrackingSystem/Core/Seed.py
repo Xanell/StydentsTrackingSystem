@@ -1,32 +1,29 @@
-from Dal.Repositories.User import UserRepository
-from Dal.Repositories.UserRole import UserRoleRepository
+from sqlalchemy.orm import Session
+
 from Core.Enums import RoleName
+from Core.Security import hash_password
+from Dal.Repositories.User import UserRepository
 
-def role_seed(session):
-    role_repo = UserRoleRepository(session)
 
-    for name in RoleName.ALL:
-        existing = role_repo.get_by_name(name)
-        if existing is None:
-            role_repo.create_role(name)
-
-def admin_seed(session, username="Admin", password="admin"):
+def admin_seed(session: Session, username: str = "Admin", password: str = "admin") -> None:
+    """
+    Создаёт единственного пользователя — администратора.
+    Всё остальное (годы, четверти, классы, предметы, пользователи, расписание)
+    админ заполняет через интерфейс.
+    """
     user_repo = UserRepository(session)
-    role_repo = UserRoleRepository(session)
 
     if user_repo.get_by_username(username) is not None:
+        print(f"Администратор '{username}' уже существует.")
         return
 
-    admin_role = role_repo.get_by_name(RoleName.ADMIN)
-    if admin_role is None:
-        raise RuntimeError("Роль 'admin' не найдена. Сначала запусти seed_roles().")
-
-    admin = user_repo.create_user(
+    user_repo.create_user(
         username=username,
-        password=password,
-        first_name="Admin",
+        password_hash=hash_password(password),
         last_name="Admin",
+        first_name="Admin",
         middle_name="Admin",
-        role_id=admin_role.id,
+        role=RoleName.ADMIN,
         class_id=None,
     )
+    print(f"Создан администратор: логин '{username}', пароль '{password}'.")

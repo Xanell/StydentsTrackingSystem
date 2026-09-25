@@ -15,7 +15,7 @@ def role_required(*allowed_roles):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
             user = request.current_user
-            if user.role.name not in allowed_roles:
+            if user.role not in allowed_roles:
                 messages.error(request, "Доступ запрещён")
                 return redirect("home")
             return view_func(request, *args, **kwargs)

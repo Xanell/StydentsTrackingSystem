@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import Http404
-from Bll.Services.UserRole import UserRoleService
+from pydantic import ValidationError
 from Bll.Services.User import UserService
 from Bll.Services.SchoolClasses import SchoolClassService
 from Bll.Services.SchoolYear import SchoolYearService
@@ -9,7 +9,16 @@ from Bll.Schemas.User import UserCreate, UserUpdate
 from Dal.database import SessionLocal
 from Core.Exceptions import BllError, NotFoundError
 from Web.Decorators import login_required, role_required
-from Core.Enums import RoleName
+from Core.Enums import RoleName, ROLE_LABELS
+
+
+def get_roles():
+    """Роли для выпадающего списка: [{"value": "student", "label": "Ученик"}, ...]"""
+    roles = []
+    for role in RoleName:
+        roles.append({"value": role.value, "label": ROLE_LABELS[role]})
+    return roles
+
 
 @login_required
 @role_required(RoleName.ADMIN)
@@ -26,7 +35,6 @@ def user_create(request):
     with SessionLocal() as session:
         user_service = UserService(session)
         class_service = SchoolClassService(session)
-        role_service = UserRoleService(session)
         year_service = SchoolYearService(session)
         current_year = year_service.get_current()
 
@@ -34,16 +42,15 @@ def user_create(request):
             messages.error(request, "Текущий год не установлен!")
             return redirect("school_years")
 
-        roles = role_service.get_all()
-        classes = class_service.get_all_classes(current_year.id)
+        classes = class_service.get_by_year(current_year.id)
 
         if request.method == "POST":
             try:
                 data = UserCreate(
-                    first_name=request.POST.get("first_name", "").strip(),
-                    middle_name=request.POST.get("middle_name", "").strip(),
-                    last_name=request.POST.get("last_name", "").strip(),
-                    role_id=request.POST.get("role_id") or None,
+                    first_name=request.POST.get("first_name", ""),
+                    middle_name=request.POST.get("middle_name", ""),
+                    last_name=request.POST.get("last_name", ""),
+                    role=request.POST.get("role", ""),
                     class_id=request.POST.get("class_id") or None
                 )
                 created = user_service.create_user(data)
@@ -53,11 +60,13 @@ def user_create(request):
                     "password": created.password,
                 }
                 return redirect("user_created")
+            except ValidationError:
+                messages.error(request, "Проверьте правильность заполнения полей")
             except BllError as e:
                 messages.error(request, str(e))
         return render(request, "users/Form.html", {
             "action": "create",
-            "roles": roles,
+            "roles": get_roles(),
             "classes": classes,
             "user": None,
         })
@@ -75,7 +84,6 @@ def user_created(request):
 def user_edit(request, user_id: int):
     with SessionLocal() as session:
         user_service = UserService(session)
-        role_service = UserRoleService(session)
         class_service = SchoolClassService(session)
         year_service = SchoolYearService(session)
 
@@ -83,35 +91,34 @@ def user_edit(request, user_id: int):
         if current_year is None:
             messages.error(request, "Текущий год не установлен")
             return redirect("school_years")
-        
+
         try:
             user = user_service.get_by_id(user_id)
         except NotFoundError:
             raise Http404("Пользователь не найден")
 
-        roles = role_service.get_all()
-        classes = class_service.get_all_classes(current_year.id)
+        classes = class_service.get_by_year(current_year.id)
 
         if request.method == "POST":
             try:
                 data = UserUpdate(
-                    first_name=request.POST.get("first_name", "").strip() or None,
-                    middle_name=request.POST.get("middle_name", "").strip() or None,
-                    last_name=request.POST.get("last_name", "").strip() or None,
-                    role_id=request.POST.get("role_id") or None,
+                    first_name=request.POST.get("first_name", ""),
+                    middle_name=request.POST.get("middle_name", ""),
+                    last_name=request.POST.get("last_name", ""),
+                    role=request.POST.get("role", ""),
                     class_id=request.POST.get("class_id") or None
                 )
                 update = user_service.update_user(user_id, data)
-                if user.school_class is not None and update.school_class is None:
-                    messages.info(request,"Класс был сброшен, потому что выбранная роль — не ученик")
                 messages.success(request, f"Пользователь {update.username} обновлён")
                 return redirect("users")
+            except ValidationError:
+                messages.error(request, "Проверьте правильность заполнения полей")
             except BllError as e:
                 messages.error(request, str(e))
 
         return render(request, "users/Form.html", {
             "action": "edit",
             "user": user,
-            "roles": roles,
+            "roles": get_roles(),
             "classes": classes,
         })

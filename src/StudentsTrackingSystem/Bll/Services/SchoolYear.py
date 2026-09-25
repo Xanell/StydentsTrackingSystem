@@ -1,98 +1,86 @@
+from datetime import date
 from sqlalchemy.orm import Session
 from Bll.Schemas.SchoolYear import SchoolYearCreate, SchoolYearDetail, SchoolYearUpdate
-from Dal.Repositories.SchoolYear import SchoolYearRepository
-from Dal.Repositories.SchoolCalendar import SchoolCalendarRepository
+from Core.Exceptions import BusinessValidationError, ConflictError, NotFoundError
+from Dal.Repositories.DayOff import DayOffRepository
 from Dal.Repositories.SchoolQuarter import QuarterRepository
-from Core.Exceptions import NotFoundError, ConflictError, BusinessValidationError
+from Dal.Repositories.SchoolYear import SchoolYearRepository
 
 class SchoolYearService:
     def __init__(self, session: Session):
         self.school_year_repo = SchoolYearRepository(session)
-        self.school_calendar_repo = SchoolCalendarRepository(session)
-        self.school_quarter_repo = QuarterRepository(session)
+        self.quarter_repo = QuarterRepository(session)
+        self.day_off_repo = DayOffRepository(session)
 
-    def create_school_year(self, data: SchoolYearCreate) -> SchoolYearDetail:
-        start_date = data.start_date
-        end_date = data.end_date
-
-        if end_date <= start_date:
-            raise BusinessValidationError("Дата окончания должна быть позже даты начала")
-        
-        year_name = f"{start_date.year}/{end_date.year}"
-        if self.school_year_repo.get_by_name(year_name) is not None:
-            raise ConflictError(f"Год '{year_name}' уже существует")
-
-        new_year = self.school_year_repo.create_school_year(name=year_name, start_date=start_date, end_date=end_date, is_current=False)
-        return SchoolYearDetail.model_validate(new_year)
-    
-    def update_year(self, year_id: int, data: SchoolYearUpdate) -> SchoolYearDetail:
+    def _get_year(self, year_id: int):
         year = self.school_year_repo.get_by_id(year_id)
         if year is None:
-            raise NotFoundError(f"Год с id={year_id} не найден")
+            raise NotFoundError(f"Учебный год с id={year_id} не найден")
+        return year
 
-        new_start = data.start_date if data.start_date is not None else year.start_date
-        new_end = data.end_date if data.end_date is not None else year.end_date
-
-        # Проверка: даты корректны
-        if new_end <= new_start:
+    def _check_dates(self, start_date: date, end_date: date, exclude_id: int | None = None) -> str:
+        """Проверяет даты и возвращает название года ("2026/2027")."""
+        if end_date <= start_date:
             raise BusinessValidationError("Дата окончания должна быть позже даты начала")
 
-        # Если меняются границы — календарь должен быть пустым
-        bounds_changed = (new_start != year.start_date) or (new_end != year.end_date)
-        if bounds_changed:
-            if self.school_calendar_repo.get_by_year(year_id):
-                raise BusinessValidationError("Нельзя менять границы года: сначала удалите календарь")
+        overlapping = self.school_year_repo.get_overlapping(start_date, end_date, exclude_id)
+        if len(overlapping) > 0:
+            raise ConflictError(f"Даты пересекаются с учебным годом {overlapping[0].name}")
 
-            for quarter in self.school_quarter_repo.get_by_year(year_id):
-                if quarter.start_date < new_start or quarter.end_date > new_end:
-                    raise BusinessValidationError(f"Четверть {quarter.number} выходит за новые границы года")
-        
-        new_name = f"{new_start.year}/{new_end.year}"
-        if new_name != year.name:
-            existing = self.school_year_repo.get_by_name(new_name)
-            if existing is not None:
-                raise ConflictError(f"Год '{new_name}' уже существует")
+        name = f"{start_date.year}/{end_date.year}"
+        existing = self.school_year_repo.get_by_name(name)
+        if existing is not None and existing.id != exclude_id:
+            raise ConflictError(f"Учебный год {name} уже существует")
+        return name
+
+    def create_school_year(self, data: SchoolYearCreate) -> SchoolYearDetail:
+        name = self._check_dates(data.start_date, data.end_date)
+        year = self.school_year_repo.create_school_year(
+            name=name,
+            start_date=data.start_date,
+            end_date=data.end_date,
+        )
+        return SchoolYearDetail.model_validate(year)
+
+    def update_year(self, year_id: int, data: SchoolYearUpdate) -> SchoolYearDetail:
+        self._get_year(year_id)
+        name = self._check_dates(data.start_date, data.end_date, exclude_id=year_id)
+
+        # Четверти и нерабочие дни не должны оказаться за границами года.
+        for quarter in self.quarter_repo.get_by_year(year_id):
+            if quarter.start_date < data.start_date or quarter.end_date > data.end_date:
+                raise BusinessValidationError(
+                    f"Четверть {quarter.number} выходит за новые границы года. Сначала измените её даты"
+                )
+        for day_off in self.day_off_repo.get_by_year(year_id):
+            if day_off.start_date < data.start_date or day_off.end_date > data.end_date:
+                raise BusinessValidationError(
+                    f"«{day_off.title}» выходит за новые границы года. Сначала измените его даты"
+                )
 
         updated = self.school_year_repo.update_year(
             year_id,
-            start_date=new_start,
-            end_date=new_end,
-            name=new_name,
+            name=name,
+            start_date=data.start_date,
+            end_date=data.end_date,
         )
-        if updated is None:
-            raise NotFoundError(f"Год с id={year_id} не найден")
+        return SchoolYearDetail.model_validate(updated)
 
-        return SchoolYearDetail.model_validate(updated)  
-      
     def get_by_id(self, year_id: int) -> SchoolYearDetail:
-        curr_year = self.school_year_repo.get_by_id(year_id)
-        if curr_year is None:
-            raise NotFoundError(f"Год #{year_id} не найден")
-        return SchoolYearDetail.model_validate(curr_year)
+        return SchoolYearDetail.model_validate(self._get_year(year_id))
 
     def get_all(self) -> list[SchoolYearDetail]:
-        year_list = self.school_year_repo.get_all()
         result = []
-        for year in year_list:
+        for year in self.school_year_repo.get_all():
             result.append(SchoolYearDetail.model_validate(year))
         return result
 
     def get_current(self) -> SchoolYearDetail | None:
-        curr_year = self.school_year_repo.get_current()
-        if curr_year is None:
+        year = self.school_year_repo.get_current()
+        if year is None:
             return None
-        return SchoolYearDetail.model_validate(curr_year)
+        return SchoolYearDetail.model_validate(year)
 
     def make_current(self, year_id: int) -> SchoolYearDetail:
-        curr_year = self.school_year_repo.get_by_id(year_id)
-        if curr_year is None:
-            raise NotFoundError(f"Год #{year_id} не найден")
-        if curr_year.is_current:
-            return SchoolYearDetail.model_validate(curr_year)
-
-        for year in self.school_year_repo.get_all():
-            if year.is_current and year.id != year_id:
-                self.school_year_repo.set_current(year.id, False)
-
-        self.school_year_repo.set_current(curr_year.id, True)
-        return SchoolYearDetail.model_validate(curr_year)
+        self._get_year(year_id)
+        return SchoolYearDetail.model_validate(self.school_year_repo.make_current(year_id))

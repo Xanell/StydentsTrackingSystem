@@ -1,21 +1,30 @@
-from .Base import Base
-from sqlalchemy import Integer, String, ForeignKey
+from datetime import datetime
+
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-class User(Base): 
-    __tablename__ = "Users"
+from Core.Enums import RoleName
+from .Base import Base, str_enum
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+class User(Base):
+    """
+    Пользователи не удаляются: выбывший ученик или уволенный учитель деактивируется
+    (deactivated_at). Его оценки, уроки и сдачи остаются в журнале, но войти он не может
+    и в списках для выбора не показывается.
+    """
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(50), unique=True)
-    password: Mapped[str] = mapped_column(String(255))
-    first_name: Mapped[str] = mapped_column(String(50))
+    password_hash: Mapped[str] = mapped_column(String(255))
     last_name: Mapped[str] = mapped_column(String(50))
+    first_name: Mapped[str] = mapped_column(String(50))
     middle_name: Mapped[str] = mapped_column(String(50))
-    role_id: Mapped[int] = mapped_column(ForeignKey("UserRole.id"))
-    class_id : Mapped[int | None] = mapped_column(ForeignKey("SchoolClasses.id"))
+    role: Mapped[RoleName] = mapped_column(str_enum(RoleName, "role"))
+    # Заполняется только у учеников.
+    class_id: Mapped[int | None] = mapped_column(ForeignKey("classes.id"))
+    deactivated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    role: Mapped["UserRole"] = relationship(back_populates="users")
-    school_class: Mapped["SchoolClass | None"] = relationship(back_populates="students")
-    schedules: Mapped[list["Schedule"]] = relationship(back_populates="teacher")
-    lesson_results: Mapped[list["LessonResult"]] = relationship(back_populates="student")
-    attendances: Mapped[list["Attendance"]] = relationship(back_populates="student")
+    school_class: Mapped["SchoolClass | None"] = relationship(back_populates="students", lazy="joined")

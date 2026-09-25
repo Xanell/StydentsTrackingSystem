@@ -1,12 +1,12 @@
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from .Base import Base
-from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 
 class Subject(Base):
-    __tablename__ = "Subjects"
+    __tablename__ = "subjects"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(50))
-    description: Mapped[str] = mapped_column(String(255))
-
-    schedule: Mapped[list["Schedule"]] = relationship(back_populates="subject")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50), unique=True)  # "Математика"
+    short_name: Mapped[str | None] = mapped_column(String(10))   # "Матем."
